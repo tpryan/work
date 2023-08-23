@@ -77,4 +77,21 @@ func (a Artifact) Hyperlink() string {
 	return fmt.Sprintf("=HYPERLINK(\"%s\",\"%s\")", u, title)
 }
 
+// Artifacts is a collection of Artifact items
 type Artifacts []Artifact
+
+// ToInterfaces converts artifacts to the slice of slice of interfaces format
+// that gsheet requires for data input
+func (a Artifacts) ToInterfaces() [][]interface{} {
+	var result [][]interface{}
+
+	header := []interface{}{"Type", "Project", "Subproject", "Title", "Role", "Shipped Date", "Link"}
+	result = append(result, header)
+
+	for _, v := range a {
+		myval := []interface{}{v.Type, v.Project, v.Subproject, v.Title, v.Role, v.ShippedDate.Format("01/02/2006"), v.Hyperlink()}
+		result = append(result, myval)
+	}
+
+	return result
+}

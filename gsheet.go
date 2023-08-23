@@ -2,6 +2,8 @@ package work
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"google.golang.org/api/sheets/v4"
 )
@@ -34,8 +36,326 @@ func (g *GSheet) SheetID(name string) (int64, error) {
 
 	resp, err := g.svc.Spreadsheets.Get(g.id).Ranges(ranges...).Context(context.Background()).Do()
 	if err != nil {
+		if strings.Contains(err.Error(), "Unable to parse range") {
+			return 0, errGSheetDoesNotExist
+		}
 		return 0, err
 	}
 
 	return resp.Sheets[0].Properties.SheetId, nil
+}
+
+var errGSheetDoesNotExist = fmt.Errorf("sheets: input sheet does not exist")
+var errGSheetAlreadyExists = fmt.Errorf("sheets: input sheet already exists")
+
+// Clear removes all content from an input sheet name
+func (g *GSheet) Clear(name string) error {
+
+	clearRange := fmt.Sprintf("%s!A:Z", name)
+
+	req := &sheets.ClearValuesRequest{}
+
+	if _, err := g.svc.Spreadsheets.Values.Clear(g.id, clearRange, req).Do(); err != nil {
+		if strings.Contains(err.Error(), "Unable to parse range") {
+			return errGSheetDoesNotExist
+		}
+		return err
+	}
+
+	return nil
+}
+
+// Add creates a new sheet in the spreadsheet with the input name
+func (g *GSheet) Add(name string) error {
+
+	rbb := &sheets.BatchUpdateSpreadsheetRequest{
+		Requests: []*sheets.Request{
+			{
+				AddSheet: &sheets.AddSheetRequest{
+					Properties: &sheets.SheetProperties{
+						Title: name,
+					},
+				},
+			}},
+	}
+
+	if _, err := g.svc.Spreadsheets.BatchUpdate(g.id, rbb).Do(); err != nil {
+		if strings.Contains(err.Error(), fmt.Sprintf("A sheet with the name \"%s\" already exists", name)) {
+			return errGSheetAlreadyExists
+		}
+		return fmt.Errorf("sheets: failed to create a new sheet %s", err)
+	}
+
+	return nil
+}
+
+// Delete removes a sheet in the spreadsheet with the input name
+func (g *GSheet) Delete(name string) error {
+
+	id, err := g.SheetID(name)
+	if err != nil {
+		return err
+	}
+
+	rbb := &sheets.BatchUpdateSpreadsheetRequest{
+		Requests: []*sheets.Request{
+			{
+				DeleteSheet: &sheets.DeleteSheetRequest{
+					SheetId: id,
+				},
+			}},
+	}
+
+	if _, err := g.svc.Spreadsheets.BatchUpdate(g.id, rbb).Do(); err != nil {
+		return fmt.Errorf("sheets: failed to delete sheet %s", err)
+	}
+	return nil
+}
+
+// FormatSheet creates a set of batch requests that will format a sheet for
+// displaying artifacts
+func (g *GSheet) FormatSheet(id int64) []*sheets.Request {
+
+	batchreq := &sheets.BatchUpdateSpreadsheetRequest{
+		Requests: []*sheets.Request{
+			{
+				UpdateSheetProperties: &sheets.UpdateSheetPropertiesRequest{
+					Fields: "gridProperties.frozenRowCount",
+					Properties: &sheets.SheetProperties{
+						SheetId: id,
+						GridProperties: &sheets.GridProperties{
+							FrozenRowCount: 1,
+						},
+					},
+				},
+			},
+			{
+				RepeatCell: &sheets.RepeatCellRequest{
+					Fields: "userEnteredFormat.textFormat",
+					Range: &sheets.GridRange{
+						SheetId:          id,
+						StartColumnIndex: 0,
+						StartRowIndex:    0,
+						EndRowIndex:      1,
+					},
+					Cell: &sheets.CellData{
+						UserEnteredFormat: &sheets.CellFormat{
+							TextFormat: &sheets.TextFormat{
+								Bold: true,
+							},
+						},
+					},
+				},
+			},
+			{
+				RepeatCell: &sheets.RepeatCellRequest{
+					Fields: "userEnteredFormat.backgroundColorStyle",
+					Range: &sheets.GridRange{
+						SheetId:          id,
+						StartColumnIndex: 0,
+						StartRowIndex:    0,
+						EndRowIndex:      1,
+					},
+					Cell: &sheets.CellData{
+						UserEnteredFormat: &sheets.CellFormat{
+							BackgroundColorStyle: &sheets.ColorStyle{
+								RgbColor: &sheets.Color{
+									Red:   .85,
+									Blue:  1.0,
+									Green: .85,
+								}},
+						},
+					},
+				},
+			},
+			{
+				RepeatCell: &sheets.RepeatCellRequest{
+					Fields: "userEnteredFormat.numberFormat",
+					Range: &sheets.GridRange{
+						SheetId:          id,
+						StartColumnIndex: 5,
+						EndColumnIndex:   6,
+						StartRowIndex:    1,
+					},
+					Cell: &sheets.CellData{
+						UserEnteredFormat: &sheets.CellFormat{
+							NumberFormat: &sheets.NumberFormat{
+								Type:    "DATE",
+								Pattern: "mm/dd/yyyy",
+							},
+						},
+					},
+				},
+			},
+			{
+				AutoResizeDimensions: &sheets.AutoResizeDimensionsRequest{
+					Dimensions: &sheets.DimensionRange{
+						SheetId:    id,
+						Dimension:  "COLUMNS",
+						StartIndex: 0,
+						EndIndex:   6,
+					},
+				},
+			},
+		},
+	}
+
+	return batchreq.Requests
+}
+
+// FormatRows generates batch requests to format individual rows of a row
+// where the rows consist of set of Artifacts
+func (g *GSheet) FormatRows(id int64, a Artifacts) []*sheets.Request {
+
+	batchreq := &sheets.BatchUpdateSpreadsheetRequest{
+		Requests: []*sheets.Request{},
+	}
+
+	for i, art := range a {
+
+		if art.Subproject == "" {
+			req := &sheets.Request{
+				RepeatCell: &sheets.RepeatCellRequest{
+					Fields: "userEnteredFormat.backgroundColorStyle",
+					Range: &sheets.GridRange{
+						SheetId:          id,
+						StartColumnIndex: 0,
+						StartRowIndex:    int64(i) + 1,
+						EndRowIndex:      int64(i) + 2,
+					},
+					Cell: &sheets.CellData{
+						UserEnteredFormat: &sheets.CellFormat{
+							BackgroundColorStyle: &sheets.ColorStyle{
+								RgbColor: &sheets.Color{
+									Red:   1.0,
+									Blue:  .98,
+									Green: .98,
+								}},
+						},
+					},
+				},
+			}
+
+			batchreq.Requests = append(batchreq.Requests, req)
+		}
+
+		if art.Type == "" {
+			req := &sheets.Request{
+				RepeatCell: &sheets.RepeatCellRequest{
+					Fields: "userEnteredFormat.backgroundColorStyle",
+					Range: &sheets.GridRange{
+						SheetId:          id,
+						StartColumnIndex: 0,
+						StartRowIndex:    int64(i) + 1,
+						EndRowIndex:      int64(i) + 2,
+					},
+					Cell: &sheets.CellData{
+						UserEnteredFormat: &sheets.CellFormat{
+							BackgroundColorStyle: &sheets.ColorStyle{
+								RgbColor: &sheets.Color{
+									Red:   1.0,
+									Blue:  .50,
+									Green: .95,
+								}},
+						},
+					},
+				},
+			}
+
+			batchreq.Requests = append(batchreq.Requests, req)
+		}
+
+		if art.Project == "" {
+			req := &sheets.Request{
+				RepeatCell: &sheets.RepeatCellRequest{
+					Fields: "userEnteredFormat.backgroundColorStyle",
+					Range: &sheets.GridRange{
+						SheetId:          id,
+						StartColumnIndex: 0,
+						StartRowIndex:    int64(i) + 1,
+						EndRowIndex:      int64(i) + 2,
+					},
+					Cell: &sheets.CellData{
+						UserEnteredFormat: &sheets.CellFormat{
+							BackgroundColorStyle: &sheets.ColorStyle{
+								RgbColor: &sheets.Color{
+									Red:   1.0,
+									Blue:  .90,
+									Green: .90,
+								}},
+						},
+					},
+				},
+			}
+
+			batchreq.Requests = append(batchreq.Requests, req)
+		}
+
+	}
+
+	return batchreq.Requests
+}
+
+func (g *GSheet) ToSheet(name string, i Interfacer) error {
+
+	id, err := g.SheetID(name)
+	if err == nil {
+		if err := g.Clear(name); err != nil {
+			return fmt.Errorf("sheets: failed to clear sheet %s", err)
+		}
+	}
+
+	if err != nil {
+		if err != errGSheetDoesNotExist {
+			return fmt.Errorf("sheets: failed to clear sheet %s", err)
+		}
+		if err := g.Add(name); err != nil {
+			return err
+		}
+		id, err = g.SheetID(name)
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := g.UpdateData(name, i); err != nil {
+		return fmt.Errorf("sheets: failed to insert into sheet %s", err)
+	}
+
+	batchreq := &sheets.BatchUpdateSpreadsheetRequest{
+		Requests: []*sheets.Request{
+			{
+				RepeatCell: &sheets.RepeatCellRequest{
+					Fields: "userEnteredFormat",
+					Range: &sheets.GridRange{
+						SheetId: id,
+					},
+				},
+			},
+		},
+	}
+
+	batchreq.Requests = append(batchreq.Requests, g.FormatSheet(id)...)
+	batchreq.Requests = append(batchreq.Requests, g.FormatRows(id, i.(Artifacts))...)
+
+	if _, err := g.svc.Spreadsheets.BatchUpdate(g.id, batchreq).Do(); err != nil {
+		return fmt.Errorf("sheets: failed to clear formatting %s", err)
+	}
+
+	return nil
+}
+
+// UpdateData inserts a given set of interfacer data into the spreadsheet in
+// sheet name
+func (g *GSheet) UpdateData(name string, i Interfacer) error {
+
+	var vr sheets.ValueRange
+	vr.Values = i.ToInterfaces()
+
+	r := fmt.Sprintf("%s!A%d:Z100000", name, 1)
+
+	if _, err := g.svc.Spreadsheets.Values.Update(g.id, r, &vr).ValueInputOption("USER_ENTERED").Do(); err != nil {
+		return fmt.Errorf("sheets: failed to insert data into sheet: %s", err)
+	}
+	return nil
 }

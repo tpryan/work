@@ -11,24 +11,35 @@ import (
 	"google.golang.org/api/sheets/v4"
 )
 
-const gsheetTestID = "1T3DDzZCSXp31uG6yY_sc_IRmnfLFxrHIKCbZi6noDRM"
-const gsheetTestIDNoPerms = "1q3Bqa4BuOMrYfQHRCJohoHVR_ks8sVbteFP1xoJy3sY"
-const credsTestPath = "config/test-creds.json"
+var gsheetTestID = os.Getenv("WORK_gsheetTestID")
+var gsheetTestIDNoPerms = os.Getenv("WORK_gsheetTestIDNoPerms")
+var credsTestPath = "config/test-creds.json"
 
-func TestGsheetSheetID(t *testing.T) {
+func getTestCreds() (*sheets.Service, error) {
 	ctx := context.Background()
 
 	f, err := os.Open(credsTestPath)
 	if err != nil {
-		t.Fatalf("couldn't read the credential file: %s", err)
+		return nil, err
 	}
 
 	config, err := NewConfig(ctx, f, []string{"https://www.googleapis.com/auth/spreadsheets"})
 	if err != nil {
-		t.Fatalf("could not generate a config: %s", err)
+		return nil, err
 	}
 
 	sheetsSVC, err := sheets.NewService(ctx, config)
+	if err != nil {
+		return nil, err
+	}
+
+	return sheetsSVC, nil
+
+}
+
+func TestGsheetSheetID(t *testing.T) {
+
+	sheetsSVC, err := getTestCreds()
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Unable to retrieve Sheets client: %v", err))
 	}
@@ -42,7 +53,7 @@ func TestGsheetSheetID(t *testing.T) {
 		"withError": {
 			id:     gsheetTestIDNoPerms,
 			in:     "Manual",
-			want:   1766204602,
+			want:   0,
 			errStr: "Error 403: The caller does not have permission",
 		},
 		"success": {
@@ -65,6 +76,121 @@ func TestGsheetSheetID(t *testing.T) {
 				t.Skip()
 			}
 			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestGsheetClear(t *testing.T) {
+	sheetsSVC, err := getTestCreds()
+	if err != nil {
+		t.Fatalf(fmt.Sprintf("Unable to retrieve Sheets client: %v", err))
+	}
+
+	tests := map[string]struct {
+		id  string
+		in  string
+		err error
+	}{
+		"withError": {
+			id:  gsheetTestID,
+			in:  "TestClearNotExists",
+			err: errGSheetDoesNotExist,
+		},
+		"success": {
+			id: gsheetTestID,
+			in: "TestClear",
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+
+			gsheet := NewGSheet(*sheetsSVC, tc.id)
+
+			err := gsheet.Clear(tc.in)
+			assert.Equal(t, tc.err, err)
+		})
+	}
+}
+
+func TestGsheetAdd(t *testing.T) {
+	sheetsSVC, err := getTestCreds()
+	if err != nil {
+		t.Fatalf(fmt.Sprintf("Unable to retrieve Sheets client: %v", err))
+	}
+
+	tests := map[string]struct {
+		id    string
+		in    string
+		err   error
+		clean bool
+	}{
+		"withError": {
+			id:  gsheetTestID,
+			in:  "TestAddError",
+			err: errGSheetAlreadyExists,
+		},
+		"success": {
+			id:    gsheetTestID,
+			in:    "NewSheetThatShouldBeDeleted",
+			clean: true,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+
+			gsheet := NewGSheet(*sheetsSVC, tc.id)
+
+			err := gsheet.Add(tc.in)
+			assert.Equal(t, tc.err, err)
+
+			if tc.clean {
+				err = gsheet.Delete(tc.in)
+				t.Logf("cleanup: delete %s error: %s", tc.in, err)
+			}
+
+		})
+	}
+}
+
+func TestGsheetDelete(t *testing.T) {
+	sheetsSVC, err := getTestCreds()
+	if err != nil {
+		t.Fatalf(fmt.Sprintf("Unable to retrieve Sheets client: %v", err))
+	}
+
+	tests := map[string]struct {
+		id     string
+		in     string
+		err    error
+		create bool
+	}{
+		"withError": {
+			id:  gsheetTestID,
+			in:  "NewSheetThatShouldBeDeletedAndDoesNotExist",
+			err: errGSheetDoesNotExist,
+		},
+		"success": {
+			id:     gsheetTestID,
+			in:     "NewSheetThatShouldBeDeleted",
+			create: true,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+
+			gsheet := NewGSheet(*sheetsSVC, tc.id)
+
+			if tc.create {
+				err := gsheet.Add(tc.in)
+				t.Logf("create: %s error: %s", tc.in, err)
+			}
+
+			err = gsheet.Delete(tc.in)
+			assert.Equal(t, tc.err, err)
+
 		})
 	}
 }
