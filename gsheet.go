@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"google.golang.org/api/sheets/v4"
 )
@@ -296,6 +297,7 @@ func (g *GSheet) FormatRows(id int64, a Artifacts) []*sheets.Request {
 	return batchreq.Requests
 }
 
+// ToSheet sends an interface to the named Sheet
 func (g *GSheet) ToSheet(name string, i Interfacer) error {
 
 	id, err := g.SheetID(name)
@@ -339,7 +341,7 @@ func (g *GSheet) ToSheet(name string, i Interfacer) error {
 	batchreq.Requests = append(batchreq.Requests, g.FormatRows(id, i.(Artifacts))...)
 
 	if _, err := g.svc.Spreadsheets.BatchUpdate(g.id, batchreq).Do(); err != nil {
-		return fmt.Errorf("sheets: failed to clear formatting %s", err)
+		return fmt.Errorf("sheets: failed to apply formatting %s", err)
 	}
 
 	return nil
@@ -355,7 +357,71 @@ func (g *GSheet) UpdateData(name string, i Interfacer) error {
 	r := fmt.Sprintf("%s!A%d:Z100000", name, 1)
 
 	if _, err := g.svc.Spreadsheets.Values.Update(g.id, r, &vr).ValueInputOption("USER_ENTERED").Do(); err != nil {
+		if strings.Contains(err.Error(), "Unable to parse range") {
+			return errGSheetDoesNotExist
+		}
+
 		return fmt.Errorf("sheets: failed to insert data into sheet: %s", err)
 	}
 	return nil
+}
+
+// Artifacts returns a given sheet as Artifacts
+func (g *GSheet) Artifacts(name string) (Artifacts, error) {
+	as := Artifacts{}
+	ranges := []string{name}
+
+	resp, err := g.svc.Spreadsheets.Get(g.id).Ranges(ranges...).IncludeGridData(true).Do()
+	if err != nil {
+		if strings.Contains(err.Error(), "Unable to parse range") {
+			return nil, errGSheetDoesNotExist
+		}
+
+		return nil, fmt.Errorf("sheets: couldn't read from spreadsheet: %w", err)
+
+	}
+	for i, row := range resp.Sheets[0].Data[0].RowData {
+
+		if i == 0 {
+			continue
+		}
+		if len(row.Values) < 7 {
+			continue
+		}
+
+		as = append(as, newArtifact(row))
+
+	}
+
+	return as, nil
+}
+
+func newArtifact(row *sheets.RowData) Artifact {
+	a := Artifact{}
+	a.Type = strings.ReplaceAll(extractString(*row.Values[0]), "\n", "")
+	a.Project = extractString(*row.Values[1])
+	a.Subproject = extractString(*row.Values[2])
+	a.Title = strings.ReplaceAll(extractString(*row.Values[3]), "\n", "")
+	a.Role = extractString(*row.Values[4])
+	a.ShippedDate = extractTime(*row.Values[5])
+	a.Link = extractString(*row.Values[6])
+	return a
+}
+
+func extractString(val sheets.CellData) string {
+	if val.EffectiveValue != nil && val.EffectiveValue.StringValue != nil {
+		return strings.TrimSpace(*val.EffectiveValue.StringValue)
+	}
+	return ""
+}
+
+func extractTime(val sheets.CellData) time.Time {
+	if val.EffectiveValue != nil && val.EffectiveValue.NumberValue != nil {
+		d := int(*val.EffectiveValue.NumberValue) - 2
+		epochDate := time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC)
+		result := epochDate.AddDate(0, 0, d)
+		return result
+
+	}
+	return time.Time{}
 }

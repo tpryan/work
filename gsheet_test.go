@@ -2,6 +2,7 @@ package work
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/api/sheets/v4"
@@ -230,6 +231,74 @@ func TestGsheetFormatRow(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			tmp := GSheet{}
 			got := tmp.FormatRows(tc.in, tc.artifacts)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestGSheetextractString(t *testing.T) {
+	tests := map[string]struct {
+		in    string
+		want  string
+		empty bool
+	}{
+		"basic": {
+			in:   "test",
+			want: "test",
+		},
+		"blank": {
+			in:    "",
+			want:  "",
+			empty: true,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+
+			val := &sheets.CellData{EffectiveValue: &sheets.ExtendedValue{
+				StringValue: &tc.in,
+			}}
+
+			if tc.empty {
+				val.EffectiveValue.StringValue = nil
+			}
+
+			got := extractString(*val)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestGSheetextractTime(t *testing.T) {
+	tests := map[string]struct {
+		in    float64
+		want  time.Time
+		empty bool
+	}{
+		"basic": {
+			in:   45161,
+			want: time.Date(2023, 8, 23, 0, 0, 0, 0, time.UTC),
+		},
+
+		"blank": {
+			want:  time.Time{},
+			empty: true,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+
+			val := &sheets.CellData{EffectiveValue: &sheets.ExtendedValue{
+				NumberValue: &tc.in,
+			}}
+
+			if tc.empty {
+				val.EffectiveValue.NumberValue = nil
+			}
+
+			got := extractTime(*val)
 			assert.Equal(t, tc.want, got)
 		})
 	}
