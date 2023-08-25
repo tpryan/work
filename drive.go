@@ -47,31 +47,61 @@ func (d DriveFiles) Artifacts() Artifacts {
 			Role:        "Author",
 		}
 
-		if strings.Contains(a.Title, "Copy ") {
-			continue
-		}
+		// TODO: do at a higher level.
+		// if strings.Contains(a.Title, "Copy ") {
+		// 	continue
+		// }
 
 		if strings.Contains(strings.ToLower(a.Title), strings.ToLower("prd")) ||
 			strings.Contains(strings.ToLower(a.Title), strings.ToLower("tdd")) {
 			a.Type = "Design Doc"
 		}
 
-		if a.Type == "" {
-			switch v.MimeType {
-			case "application/vnd.google-apps.spreadsheet":
-				a.Type = "Sheet"
-			case "application/vnd.google-apps.document":
-				a.Type = "Doc"
-			case "application/vnd.google-apps.presentation":
-				a.Type = "Slides"
-			default:
-				a.Type = "File"
-			}
+		typeMap := map[string]string{
+			"application/vnd.google-apps.spreadsheet":  "Sheet",
+			"application/vnd.google-apps.document":     "Doc",
+			"application/vnd.google-apps.presentation": "Slides",
+		}
 
+		if a.Type == "" {
+			a.Type = "File"
+			if t, ok := typeMap[v.MimeType]; ok {
+				a.Type = t
+			}
 		}
 
 		arts = append(arts, a)
 	}
 
 	return arts
+}
+
+// DriveSearch  returns results from Google Drive as artifacts
+func DriveSearch(q string, svc *drive.Service) (Artifacts, error) {
+
+	token := "NOTEMPTY"
+	files := DriveFiles{}
+
+	for token != "" {
+
+		if token == "NOTEMPTY" {
+			token = ""
+		}
+
+		r, err := svc.Files.List().PageToken(token).Q(q).Do()
+
+		if err != nil {
+			return nil, fmt.Errorf("drive files list failed: %s", err)
+		}
+
+		if len(r.Items) > 0 {
+			for _, i := range r.Items {
+				files = append(files, i)
+			}
+		}
+
+		token = r.NextPageToken
+
+	}
+	return files.Artifacts(), nil
 }
