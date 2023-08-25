@@ -95,3 +95,126 @@ func (a Artifacts) ToInterfaces() [][]interface{} {
 
 	return result
 }
+
+// Massage runs through all of the options in a queue to prune an otherwise
+// alter the list of artifacts
+func (a *Artifacts) Massage(opts ...Option) *Artifacts {
+	for _, opt := range opts {
+		opt(a)
+	}
+	return a
+}
+
+// Option is function that alters a list of Artifacts
+type Option = func(a *Artifacts)
+
+// After returns artifacts from after a particular shippedDate
+func After(t time.Time) Option {
+	return func(a *Artifacts) {
+		result := Artifacts{}
+
+		for _, art := range *a {
+			if art.ShippedDate.After(t) {
+				result = append(result, art)
+			}
+		}
+
+		*a = result
+	}
+}
+
+// Before returns artifacts from before a particular shippedDate
+func Before(t time.Time) Option {
+	return func(a *Artifacts) {
+		result := Artifacts{}
+
+		for _, art := range *a {
+			if art.ShippedDate.Before(t) {
+				result = append(result, art)
+			}
+		}
+
+		*a = result
+	}
+}
+
+// Between returns artifacts from before and after particular shippedDates
+func Between(start, end time.Time) Option {
+	return func(a *Artifacts) {
+		result := Artifacts{}
+		if start.IsZero() || end.IsZero() {
+			return
+		}
+
+		for _, art := range *a {
+			if art.ShippedDate.After(start) && art.ShippedDate.Before(end) {
+				result = append(result, art)
+			}
+		}
+
+		*a = result
+	}
+
+}
+
+// ProjectFilter returns only the input projects
+func ProjectFilter(project string) Option {
+	return func(a *Artifacts) {
+		if project == "" {
+			return
+		}
+		result := Artifacts{}
+
+		for _, art := range *a {
+
+			if strings.ToLower(art.Project) == strings.ToLower(project) {
+				result = append(result, art)
+			}
+
+		}
+
+		*a = result
+	}
+}
+
+// Unique removes repeated artifacts based on links
+func Unique() Option {
+	return func(a *Artifacts) {
+		result := Artifacts{}
+		uniquer := map[string]Artifact{}
+
+		for _, art := range *a {
+			alr, ok := uniquer[art.Link]
+			if !ok {
+				uniquer[art.Link] = art
+				continue
+			}
+			if alr.Role != "assignee" && art.Role == "assignee" {
+				uniquer[art.Link] = art
+				continue
+			}
+
+		}
+
+		for _, v := range uniquer {
+			result = append(result, v)
+		}
+
+		*a = result
+	}
+}
+
+// ExcludeTitle removes articles that have the input string in the title
+func ExcludeTitle(s string) Option {
+	return func(a *Artifacts) {
+		result := Artifacts{}
+
+		for _, art := range *a {
+			if !strings.Contains(art.Title, s) {
+				result = append(result, art)
+			}
+		}
+
+		*a = result
+	}
+}
