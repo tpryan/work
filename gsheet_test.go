@@ -136,7 +136,7 @@ func TestGsheetFormatRow(t *testing.T) {
 				},
 			},
 			want: []*sheets.Request{
-				&sheets.Request{
+				{
 					RepeatCell: &sheets.RepeatCellRequest{
 						Fields: "userEnteredFormat.backgroundColorStyle",
 						Range: &sheets.GridRange{
