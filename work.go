@@ -1,3 +1,5 @@
+// Package work defines code for using a gsheet as a datasource and destination
+// for work related artifacts
 package work
 
 import (
