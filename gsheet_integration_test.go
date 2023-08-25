@@ -16,7 +16,7 @@ var gsheetTestID = os.Getenv("WORK_gsheetTestID")
 var gsheetTestIDNoPerms = os.Getenv("WORK_gsheetTestIDNoPerms")
 var credsTestPath = "config/test-creds.json"
 
-func getTestCreds() (*sheets.Service, error) {
+func getTestSheetsSvc() (*sheets.Service, error) {
 	ctx := context.Background()
 
 	f, err := os.Open(credsTestPath)
@@ -40,7 +40,7 @@ func getTestCreds() (*sheets.Service, error) {
 
 func TestGsheetSheetID(t *testing.T) {
 
-	sheetsSVC, err := getTestCreds()
+	sheetsSVC, err := getTestSheetsSvc()
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Unable to retrieve Sheets client: %v", err))
 	}
@@ -82,7 +82,7 @@ func TestGsheetSheetID(t *testing.T) {
 }
 
 func TestGsheetClear(t *testing.T) {
-	sheetsSVC, err := getTestCreds()
+	sheetsSVC, err := getTestSheetsSvc()
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Unable to retrieve Sheets client: %v", err))
 	}
@@ -115,7 +115,7 @@ func TestGsheetClear(t *testing.T) {
 }
 
 func TestGsheetAdd(t *testing.T) {
-	sheetsSVC, err := getTestCreds()
+	sheetsSVC, err := getTestSheetsSvc()
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Unable to retrieve Sheets client: %v", err))
 	}
@@ -168,7 +168,7 @@ func TestGsheetAdd(t *testing.T) {
 }
 
 func TestGsheetDelete(t *testing.T) {
-	sheetsSVC, err := getTestCreds()
+	sheetsSVC, err := getTestSheetsSvc()
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Unable to retrieve Sheets client: %v", err))
 	}
@@ -221,7 +221,7 @@ func TestGsheetDelete(t *testing.T) {
 
 func TestGSheetArtifacts(t *testing.T) {
 
-	sheetsSVC, err := getTestCreds()
+	sheetsSVC, err := getTestSheetsSvc()
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Unable to retrieve Sheets client: %v", err))
 	}
@@ -276,7 +276,7 @@ func TestGSheetArtifacts(t *testing.T) {
 
 func TestGSheetUpdateData(t *testing.T) {
 
-	sheetsSVC, err := getTestCreds()
+	sheetsSVC, err := getTestSheetsSvc()
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Unable to retrieve Sheets client: %v", err))
 	}
@@ -348,7 +348,7 @@ func TestGSheetUpdateData(t *testing.T) {
 
 func TestGSheetToSheet(t *testing.T) {
 
-	sheetsSVC, err := getTestCreds()
+	sheetsSVC, err := getTestSheetsSvc()
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Unable to retrieve Sheets client: %v", err))
 	}
