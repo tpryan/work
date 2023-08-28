@@ -8,14 +8,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"time"
 
 	"golang.org/x/oauth2/jwt"
 	"google.golang.org/api/option"
 )
 
-// NewConfig returns a clientOption from a given set of credentials.
+// NewClientOption returns a clientOption from a given set of credentials.
 // Used to initialize Google API clients
-func NewConfig(ctx context.Context, r io.Reader, scopes []string) (option.ClientOption, error) {
+func NewClientOption(ctx context.Context, r io.Reader, scopes []string) (option.ClientOption, error) {
 	m := make(map[string]string)
 
 	buf := new(bytes.Buffer)
@@ -38,3 +39,26 @@ func NewConfig(ctx context.Context, r io.Reader, scopes []string) (option.Client
 
 	return client, nil
 }
+
+// Config is the collection of settings that will direct artifact collection
+type Config struct {
+	ID           string
+	Destinations Destinations `yaml:"destinations,omitempty"`
+	Sources      []string     `yaml:"sources,omitempty"`
+	Classifiers  Classifiers  `yaml:"classifiers,omitempty"`
+}
+
+// Destination is a place to write a report based on the criteria
+type Destination struct {
+	Label    string `yaml:"label,omitempty"`
+	Sort     string `yaml:"sort,omitempty"`
+	Summary  bool   `yaml:"summary,omitempty"`
+	Criteria struct {
+		Start   time.Time `yaml:"start,omitempty"`
+		End     time.Time `yaml:"end,omitempty"`
+		Project string    `yaml:"project,omitempty"`
+	} `yaml:"criteria,omitempty"`
+}
+
+// Destinations is a collection of destination items
+type Destinations []Destination

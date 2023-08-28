@@ -20,7 +20,7 @@ func getTestDriveSvc() (*drive.Service, error) {
 		return nil, err
 	}
 
-	config, err := NewConfig(ctx, f, []string{"https://www.googleapis.com/auth/drive"})
+	config, err := NewClientOption(ctx, f, []string{"https://www.googleapis.com/auth/drive"})
 	if err != nil {
 		return nil, err
 	}

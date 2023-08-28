@@ -47,7 +47,7 @@ func (d DriveFiles) Artifacts() Artifacts {
 			Role:        "Author",
 		}
 
-		// TODO: do at a higher level.
+		// TODO: do at a higher level - now built into
 		// if strings.Contains(a.Title, "Copy ") {
 		// 	continue
 		// }

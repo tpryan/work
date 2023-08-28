@@ -154,18 +154,6 @@ func TestDriveArtifacts(t *testing.T) {
 				},
 			},
 		},
-
-		"Copy": {
-			in: DriveFiles{
-				&drive.File{
-					Title:         "Copy of title prd",
-					AlternateLink: "https://example.com",
-					CreatedDate:   "BADTIMEFORMAT",
-					MimeType:      "application/vnd.google-apps.document",
-				},
-			},
-			want: Artifacts{},
-		},
 	}
 
 	for name, tc := range tests {

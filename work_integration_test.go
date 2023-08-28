@@ -26,7 +26,7 @@ func TestNewConfig(t *testing.T) {
 			ctx := context.Background()
 			f, _ := os.Open(tc.path)
 
-			_, err := NewConfig(ctx, f, []string{""})
+			_, err := NewClientOption(ctx, f, []string{""})
 
 			if tc.errStr == "" && err != nil {
 				t.Fatalf("got an error when expected none: %s", err)

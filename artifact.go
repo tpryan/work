@@ -105,6 +105,35 @@ func (a *Artifacts) Massage(opts ...Option) *Artifacts {
 	return a
 }
 
+func uniform(s string) string {
+	return strings.ToLower(strings.TrimSpace(s))
+}
+
+// Search looks for an exact match for a given link in a given set of artifacts
+// it adjusts for shortcuts for buganizer and critique
+func (a Artifacts) Search(link string) Artifact {
+	for _, art := range a {
+		if strings.Contains(uniform(art.Link), uniform(link)) ||
+			strings.Contains(uniform(link), uniform(art.Link)) {
+			return art
+		}
+
+		if strings.Contains(link, "critique.") ||
+			strings.Contains(link, "buganizer.") ||
+			strings.Contains(link, "b/") {
+			sl := strings.Split(link, "/")
+			tmp := sl[len(sl)-1]
+			if strings.Contains(link, tmp) {
+				return art
+			}
+
+		}
+
+	}
+
+	return Artifact{}
+}
+
 // Option is function that alters a list of Artifacts
 type Option = func(a *Artifacts)
 
@@ -217,4 +246,103 @@ func ExcludeTitle(s string) Option {
 
 		*a = result
 	}
+}
+
+// Classify analyzes a set of artifacts and fills in Project and Subproject
+// based on matches or substrings
+func Classify(list Classifiers) Option {
+	return func(a *Artifacts) {
+		result := Artifacts{}
+
+		for _, art := range *a {
+
+			// Find if the item is in the classify list somewhere
+			class := list.Search(art.Link)
+
+			// if it is, but exluded, skip it.
+			if class.Project == "Exclusions" {
+				continue
+			}
+
+			// otherwise if it matches overwrite and continue
+			if class.Link != "" {
+				art.Project = class.Project
+				art.Subproject = class.Subproject
+				result = append(result, art)
+				continue
+			}
+
+			art = list.Stamp(art)
+
+			result = append(result, art)
+
+		}
+		*a = result
+	}
+
+}
+
+// Classifier is a data structure that is used for filling in missing data in
+// artifacts
+type Classifier struct {
+	Project    string              `yaml:"project,omitempty"`
+	Subproject string              `yaml:"subproject,omitempty"`
+	Links      []string            `yaml:"links,omitempty"`
+	Contains   map[string][]string `yaml:"contains,omitempty"`
+}
+
+// Classifiers is a collection of Classifer items
+type Classifiers struct {
+	lists     []Classifier
+	artifacts Artifacts
+}
+
+// Search loons through a list of classifiers and returns a Artifact template
+// to use in filling in missing data in the items that match the link
+func (c Classifiers) Search(link string) Artifact {
+	if c.artifacts == nil {
+		result := Artifacts{}
+
+		for _, list := range c.lists {
+			for _, link := range list.Links {
+				na := Artifact{}
+				na.Project = list.Project
+				na.Subproject = list.Subproject
+				na.Link = link
+				result = append(result, na)
+			}
+		}
+		c.artifacts = result
+	}
+
+	return c.artifacts.Search(link)
+}
+
+// Stamp alters the input artifact based on substring matching
+func (c Classifiers) Stamp(art Artifact) Artifact {
+
+	for _, list := range c.lists {
+		for key, value := range list.Contains {
+			fmt.Printf("key: %+v\n", key)
+			fmt.Printf("value: %+v\n", value)
+			if key == "title" {
+				for _, v := range value {
+					if strings.Contains(uniform(art.Title), uniform(v)) {
+						art.Project = list.Project
+						art.Subproject = list.Subproject
+					}
+				}
+			}
+			if key == "link" {
+				for _, v := range value {
+					if strings.Contains(uniform(art.Link), uniform(v)) {
+						art.Project = list.Project
+						art.Subproject = list.Subproject
+					}
+				}
+			}
+		}
+	}
+
+	return art
 }

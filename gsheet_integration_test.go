@@ -24,7 +24,7 @@ func getTestSheetsSvc() (*sheets.Service, error) {
 		return nil, err
 	}
 
-	config, err := NewConfig(ctx, f, []string{"https://www.googleapis.com/auth/spreadsheets"})
+	config, err := NewClientOption(ctx, f, []string{"https://www.googleapis.com/auth/spreadsheets"})
 	if err != nil {
 		return nil, err
 	}
@@ -71,6 +71,8 @@ func TestGsheetSheetID(t *testing.T) {
 
 			got, err := gsheet.SheetID(tc.in)
 			if tc.errStr == "" && err != nil {
+				t.Logf("sheet name: %s", tc.in)
+				t.Logf("spreadsheet id: %s", tc.id)
 				t.Fatalf("got an error when expected none: %s", err)
 			}
 			if tc.errStr != "" && strings.Contains(err.Error(), tc.errStr) {

@@ -610,3 +610,287 @@ func TestArtifactsOptionExcludeTitle(t *testing.T) {
 		})
 	}
 }
+
+func TestArtifactsSearch(t *testing.T) {
+	tests := map[string]struct {
+		artifacts Artifacts
+		in        string
+		want      Artifact
+	}{
+		"basic": {
+			artifacts: Artifacts{
+				Artifact{
+					Link: "http://example.com/5678",
+				},
+			},
+			in: "http://example.com",
+			want: Artifact{
+				Link: "http://example.com/5678",
+			},
+		},
+		"nomatch": {
+			artifacts: Artifacts{
+				Artifact{
+					Link: "http://example.com/5678",
+				},
+			},
+			in:   "http://test.com",
+			want: Artifact{},
+		},
+		"cl": {
+			artifacts: Artifacts{
+				Artifact{
+					Link: "http://critique.corp.google.com/cl/1234567",
+				},
+			},
+			in: "cl/123456",
+			want: Artifact{
+				Link: "http://critique.corp.google.com/cl/1234567",
+			},
+		},
+		"critique": {
+			artifacts: Artifacts{
+				Artifact{
+					Link: "https://cl/1234567",
+				},
+			},
+			in: "http://critique.corp.google.com/cl/1234567",
+			want: Artifact{
+				Link: "https://cl/1234567",
+			},
+		},
+		"b": {
+			artifacts: Artifacts{
+				Artifact{
+					Link: "https://buganizer.corp.google.com/issues/123456",
+				},
+			},
+			in: "b/123456",
+			want: Artifact{
+				Link: "https://buganizer.corp.google.com/issues/123456",
+			},
+		},
+		"buganizer": {
+			artifacts: Artifacts{
+				Artifact{
+					Link: "https://b/123456",
+				},
+			},
+			in: "https://buganizer.corp.google.com/issues/123456",
+			want: Artifact{
+				Link: "https://b/123456",
+			},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			got := tc.artifacts.Search(tc.in)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestArtifactsClassify(t *testing.T) {
+	tests := map[string]struct {
+		in          Artifacts
+		classifiers Classifiers
+		want        *Artifacts
+	}{
+		"linkpartial": {
+			in: Artifacts{
+				Artifact{
+					Title: "Title",
+					Link:  "http://example.com",
+				},
+				Artifact{
+					Title: "Test Title",
+					Link:  "http://test.com",
+				},
+			},
+			classifiers: Classifiers{
+				lists: []Classifier{
+					{
+						Project:    "Example",
+						Subproject: "Something",
+						Contains: map[string][]string{
+							"link": {"example"},
+						},
+					},
+				},
+			},
+			want: &Artifacts{
+				Artifact{
+					Title:      "Title",
+					Project:    "Example",
+					Subproject: "Something",
+					Link:       "http://example.com",
+				},
+				Artifact{
+					Title: "Test Title",
+					Link:  "http://test.com",
+				},
+			},
+		},
+		"linkfull": {
+			in: Artifacts{
+				Artifact{
+					Title: "Title",
+					Link:  "http://example.com",
+				},
+				Artifact{
+					Title: "Test Title",
+					Link:  "http://test.com",
+				},
+			},
+			classifiers: Classifiers{
+				lists: []Classifier{
+					{
+						Project:    "Example",
+						Subproject: "Something",
+						Links:      []string{"http://example.com"},
+					},
+				},
+			},
+			want: &Artifacts{
+				Artifact{
+					Title:      "Title",
+					Project:    "Example",
+					Subproject: "Something",
+					Link:       "http://example.com",
+				},
+				Artifact{
+					Title: "Test Title",
+					Link:  "http://test.com",
+				},
+			},
+		},
+		"exclusions": {
+			in: Artifacts{
+				Artifact{
+					Title: "Title",
+					Link:  "http://example.com",
+				},
+				Artifact{
+					Title: "Test Title",
+					Link:  "http://test.com",
+				},
+			},
+			classifiers: Classifiers{
+				lists: []Classifier{
+					{
+						Project:    "Exclusions",
+						Subproject: "Something",
+						Links:      []string{"http://example.com"},
+					},
+				},
+			},
+			want: &Artifacts{
+				Artifact{
+					Title: "Test Title",
+					Link:  "http://test.com",
+				},
+			},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			got := tc.in.Massage(Classify(tc.classifiers))
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestClassifierStamp(t *testing.T) {
+	tests := map[string]struct {
+		classifiers Classifiers
+		in          Artifact
+		want        Artifact
+	}{
+		"link": {
+			classifiers: Classifiers{
+				lists: []Classifier{
+					{
+						Project:    "Example",
+						Subproject: "Something",
+						Contains: map[string][]string{
+							"link": {"example"},
+						},
+					},
+				},
+			},
+			in: Artifact{
+				Link: "http://example.com",
+			},
+			want: Artifact{
+				Project:    "Example",
+				Subproject: "Something",
+				Link:       "http://example.com",
+			},
+		},
+		"title": {
+			classifiers: Classifiers{
+				lists: []Classifier{
+					{
+						Project:    "Example",
+						Subproject: "Something specific",
+						Contains: map[string][]string{
+							"title": {"example"},
+						},
+					},
+				},
+			},
+			in: Artifact{
+				Title: "Example of a test",
+			},
+			want: Artifact{
+				Title:      "Example of a test",
+				Project:    "Example",
+				Subproject: "Something specific",
+			},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			got := tc.classifiers.Stamp(tc.in)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestClassifiersSearch(t *testing.T) {
+	tests := map[string]struct {
+		classifiers Classifiers
+		in          string
+		want        Artifact
+	}{
+		"basic": {
+			classifiers: Classifiers{
+				lists: []Classifier{
+					{
+						Project:    "Example",
+						Subproject: "Something",
+						Links: []string{
+							"http://example.com",
+						},
+					},
+				},
+			},
+			in: "http://example.com",
+			want: Artifact{
+				Project:    "Example",
+				Subproject: "Something",
+				Link:       "http://example.com",
+			},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			got := tc.classifiers.Search(tc.in)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
