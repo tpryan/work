@@ -126,8 +126,8 @@ func TestArtifactsToInterfaces(t *testing.T) {
 				},
 			},
 			want: [][]interface{}{
-				[]interface{}{"Type", "Project", "Subproject", "Title", "Role", "Shipped Date", "Link"},
-				[]interface{}{"TestType", "Proj", "Sub", "TestTitle", "TestRole", "08/21/2023", "=HYPERLINK(\"http://example.com\",\"http://example.com\")"},
+				{"Type", "Project", "Subproject", "Title", "Role", "Shipped Date", "Link"},
+				{"TestType", "Proj", "Sub", "TestTitle", "TestRole", "08/21/2023", "=HYPERLINK(\"http://example.com\",\"http://example.com\")"},
 			},
 		},
 	}
