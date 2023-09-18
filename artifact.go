@@ -293,7 +293,7 @@ type Classifier struct {
 
 // Classifiers is a collection of Classifer items
 type Classifiers struct {
-	lists     []Classifier
+	Lists     []Classifier `yaml:"lists,omitempty"`
 	artifacts Artifacts
 }
 
@@ -303,7 +303,7 @@ func (c Classifiers) Search(link string) Artifact {
 	if c.artifacts == nil {
 		result := Artifacts{}
 
-		for _, list := range c.lists {
+		for _, list := range c.Lists {
 			for _, link := range list.Links {
 				na := Artifact{}
 				na.Project = list.Project
@@ -321,10 +321,8 @@ func (c Classifiers) Search(link string) Artifact {
 // Stamp alters the input artifact based on substring matching
 func (c Classifiers) Stamp(art Artifact) Artifact {
 
-	for _, list := range c.lists {
+	for _, list := range c.Lists {
 		for key, value := range list.Contains {
-			fmt.Printf("key: %+v\n", key)
-			fmt.Printf("value: %+v\n", value)
 			if key == "title" {
 				for _, v := range value {
 					if strings.Contains(uniform(art.Title), uniform(v)) {

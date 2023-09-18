@@ -7,6 +7,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/oauth2 v0.11.0
 	google.golang.org/api v0.138.0
+	gopkg.in/yaml.v2 v2.2.3
 )
 
 require (

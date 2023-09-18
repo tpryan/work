@@ -709,7 +709,7 @@ func TestArtifactsClassify(t *testing.T) {
 				},
 			},
 			classifiers: Classifiers{
-				lists: []Classifier{
+				Lists: []Classifier{
 					{
 						Project:    "Example",
 						Subproject: "Something",
@@ -744,7 +744,7 @@ func TestArtifactsClassify(t *testing.T) {
 				},
 			},
 			classifiers: Classifiers{
-				lists: []Classifier{
+				Lists: []Classifier{
 					{
 						Project:    "Example",
 						Subproject: "Something",
@@ -777,7 +777,7 @@ func TestArtifactsClassify(t *testing.T) {
 				},
 			},
 			classifiers: Classifiers{
-				lists: []Classifier{
+				Lists: []Classifier{
 					{
 						Project:    "Exclusions",
 						Subproject: "Something",
@@ -810,7 +810,7 @@ func TestClassifierStamp(t *testing.T) {
 	}{
 		"link": {
 			classifiers: Classifiers{
-				lists: []Classifier{
+				Lists: []Classifier{
 					{
 						Project:    "Example",
 						Subproject: "Something",
@@ -831,7 +831,7 @@ func TestClassifierStamp(t *testing.T) {
 		},
 		"title": {
 			classifiers: Classifiers{
-				lists: []Classifier{
+				Lists: []Classifier{
 					{
 						Project:    "Example",
 						Subproject: "Something specific",
@@ -868,7 +868,7 @@ func TestClassifiersSearch(t *testing.T) {
 	}{
 		"basic": {
 			classifiers: Classifiers{
-				lists: []Classifier{
+				Lists: []Classifier{
 					{
 						Project:    "Example",
 						Subproject: "Something",
