@@ -139,6 +139,7 @@ func (a Artifacts) Search(link string) Artifact {
 	return Artifact{}
 }
 
+// Copy duplicates a list of artifacts completely
 func (a Artifacts) Copy() Artifacts {
 	result := Artifacts{}
 
@@ -148,12 +149,14 @@ func (a Artifacts) Copy() Artifacts {
 	return result
 }
 
+// Sort reorders a list of artifacts by ShippedDate
 func (a *Artifacts) Sort() {
 	sort.Slice((*a), func(i, j int) bool {
 		return (*a)[i].ShippedDate.Before((*a)[j].ShippedDate)
 	})
 }
 
+// SortReport reorders a list of artifacts by Project, Subproject, Type, then ShippedDate
 func (a *Artifacts) SortReport() {
 	sort.Slice((*a), func(i, j int) bool {
 		if (*a)[i].Project == (*a)[j].Project {
@@ -169,6 +172,7 @@ func (a *Artifacts) SortReport() {
 	})
 }
 
+// Template spits out a list of artifacts as a markdown report
 func (a Artifacts) Template(label string) (string, error) {
 	a.SortReport()
 	a.FillInSubs()
@@ -222,6 +226,7 @@ func (a Artifacts) Template(label string) (string, error) {
 	return tpl.String(), nil
 }
 
+// FillInSubs adds N/A for all empty subprojects, for reporting purposes
 func (a *Artifacts) FillInSubs() {
 	result := Artifacts{}
 
