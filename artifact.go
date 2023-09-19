@@ -57,7 +57,7 @@ func (a Artifact) Hyperlink() string {
 	title := a.Link
 
 	if strings.Contains(a.Link, "critique.corp.google.com") {
-		title = strings.ReplaceAll(a.Link, "//critique.corp.google.com/", "//")
+		title = strings.ReplaceAll(a.Link, "//critique.corp.google.com/", "//cl")
 	}
 
 	if strings.Contains(a.Link, "buganizer.corp.google.com") {
@@ -112,31 +112,58 @@ func uniform(s string) string {
 	return strings.ToLower(strings.TrimSpace(s))
 }
 
+func urlMatch(u1, u2 string) bool {
+	url1, err := url.Parse(u1)
+	if err != nil {
+		return false
+	}
+
+	url2, err := url.Parse(u2)
+	if err != nil {
+		return false
+	}
+
+	switch url1.Host {
+	case "critique.corp.google.com":
+		url1.Host = "cl"
+		url1.Path = strings.Replace(url1.Path, "cl/", "", 1)
+	case "buganizer.corp.google.com", "b.corp.google.com":
+		url1.Host = "b"
+		url1.Path = strings.Replace(url1.Path, "issues/", "", 1)
+	}
+
+	switch url2.Host {
+	case "critique.corp.google.com":
+		url2.Host = "cl"
+		url2.Path = strings.Replace(url2.Path, "cl/", "", 1)
+	case "buganizer.corp.google.com", "b.corp.google.com":
+		url2.Host = "b"
+		url2.Path = strings.Replace(url2.Path, "issues/", "", 1)
+	}
+
+	if url1.Host != url2.Host {
+		return false
+	}
+
+	if url1.Path != url2.Path {
+		return false
+	}
+
+	return true
+}
+
 // Search looks for an exact match for a given link in a given set of artifacts
 // it adjusts for shortcuts for buganizer and critique
-func (a Artifacts) Search(link string) Artifact {
+func (a Artifacts) Search(link string) (Artifact, bool) {
 	for _, art := range a {
 
-		if strings.Contains(uniform(art.Link), uniform(link)) ||
-			strings.Contains(uniform(link), uniform(art.Link)) {
-			return art
-		}
-
-		if strings.Contains(link, "critique.") ||
-			strings.Contains(link, "buganizer.") ||
-			strings.Contains(link, "b/") {
-			sl := strings.Split(link, "/")
-			tmp := sl[len(sl)-1]
-
-			if strings.Contains(link, tmp) {
-				return art
-			}
-
+		if urlMatch(art.Link, link) {
+			return art, true
 		}
 
 	}
 
-	return Artifact{}
+	return Artifact{}, false
 }
 
 // Copy duplicates a list of artifacts completely
@@ -369,10 +396,10 @@ func Classify(list Classifiers) Option {
 			}
 
 			// Find if the item is in the classify list somewhere
-			class := list.Search(art.Link)
+			class, ok := list.Search(art.Link)
 
 			// otherwise if it matches overwrite and continue
-			if class.Link != "" {
+			if ok {
 				art.Project = class.Project
 				art.Subproject = class.Subproject
 				result = append(result, art)
@@ -407,7 +434,7 @@ type Classifiers struct {
 
 // Search loons through a list of classifiers and returns a Artifact template
 // to use in filling in missing data in the items that match the link
-func (c Classifiers) Search(link string) Artifact {
+func (c Classifiers) Search(link string) (Artifact, bool) {
 	if c.artifacts == nil {
 		result := Artifacts{}
 
@@ -422,7 +449,6 @@ func (c Classifiers) Search(link string) Artifact {
 		}
 		c.artifacts = result
 	}
-
 	return c.artifacts.Search(link)
 }
 

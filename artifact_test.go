@@ -929,7 +929,7 @@ func TestArtifactsSearch(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			got := tc.artifacts.Search(tc.in)
+			got, _ := tc.artifacts.Search(tc.in)
 			assert.Equal(t, tc.want, got)
 		})
 	}
@@ -1129,11 +1129,105 @@ func TestClassifiersSearch(t *testing.T) {
 				Link:       "http://example.com",
 			},
 		},
+		"complex": {
+			classifiers: Classifiers{
+				Lists: []Classifier{
+					{
+						Project:    "Example",
+						Subproject: "Something",
+						Links: []string{
+							"http://example.com/12345",
+						},
+					},
+				},
+			},
+			in:   "http://example.com",
+			want: Artifact{},
+		},
+		"cl": {
+			classifiers: Classifiers{
+				Lists: []Classifier{
+					{
+						Project:    "Example",
+						Subproject: "Something",
+						Links: []string{
+							"http://cl/12345",
+						},
+					},
+				},
+			},
+			in: "http://critique.corp.google.com/12345",
+			want: Artifact{
+				Project:    "Example",
+				Subproject: "Something",
+				Link:       "http://cl/12345",
+			},
+		},
 	}
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			got := tc.classifiers.Search(tc.in)
+			got, _ := tc.classifiers.Search(tc.in)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestUrlMatch(t *testing.T) {
+	tests := map[string]struct {
+		in1, in2 string
+		want     bool
+	}{
+		"different protocols": {
+			in1:  "http://example.com",
+			in2:  "https://example.com",
+			want: true,
+		},
+		"different paths": {
+			in1:  "http://example.com",
+			in2:  "https://example.com/12345",
+			want: false,
+		},
+		"basic ": {
+			in1:  "http://example2.com",
+			in2:  "https://example.com",
+			want: false,
+		},
+		"critique": {
+			in1:  "https://critique.corp.google.com/cl/556933261",
+			in2:  "https://cl/556933261",
+			want: true,
+		},
+		"critiquerev": {
+			in1:  "https://cl/556933261",
+			in2:  "https://critique.corp.google.com/cl/556933261",
+			want: true,
+		},
+		"buganizer": {
+			in1:  "https://buganizer.corp.google.com/issues/294406629",
+			in2:  "https://b/294406629",
+			want: true,
+		},
+		"buganizerrev": {
+			in1:  "https://b/294406629",
+			in2:  "https://buganizer.corp.google.com/issues/294406629",
+			want: true,
+		},
+		"b": {
+			in1:  "https://b.corp.google.com/issues/294406629",
+			in2:  "https://b/294406629",
+			want: true,
+		},
+		"brev": {
+			in1:  "https://b/294406629",
+			in2:  "https://b.corp.google.com/issues/294406629",
+			want: true,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			got := urlMatch(tc.in1, tc.in2)
 			assert.Equal(t, tc.want, got)
 		})
 	}
