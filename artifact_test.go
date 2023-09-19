@@ -1025,9 +1025,9 @@ func TestArtifactsClassify(t *testing.T) {
 					{
 						Project:    "Exclusions",
 						Subproject: "Something",
-						Links:      []string{"http://example.com"},
 					},
 				},
+				Exclusions: []string{"http://example.com"},
 			},
 			want: &Artifacts{
 				Artifact{

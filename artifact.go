@@ -359,15 +359,17 @@ func Classify(list Classifiers) Option {
 	return func(a *Artifacts) {
 		result := Artifacts{}
 
+	ArtLoop:
 		for _, art := range *a {
+
+			for _, v := range list.Exclusions {
+				if strings.Contains(art.Link, v) {
+					continue ArtLoop
+				}
+			}
 
 			// Find if the item is in the classify list somewhere
 			class := list.Search(art.Link)
-
-			// if it is, but exluded, skip it.
-			if class.Project == "Exclusions" {
-				continue
-			}
 
 			// otherwise if it matches overwrite and continue
 			if class.Link != "" {
@@ -398,8 +400,9 @@ type Classifier struct {
 
 // Classifiers is a collection of Classifer items
 type Classifiers struct {
-	Lists     []Classifier `yaml:"lists,omitempty"`
-	artifacts Artifacts
+	Lists      []Classifier `yaml:"lists,omitempty"`
+	Exclusions []string     `yaml:"exclusions,omitempty"`
+	artifacts  Artifacts
 }
 
 // Search loons through a list of classifiers and returns a Artifact template

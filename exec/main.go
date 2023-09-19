@@ -160,13 +160,6 @@ func writeReport(gsheet work.GSheet, sources []string, destinations work.Destina
 
 	}
 
-	for _, v := range all {
-		if v.Type == "CL" {
-			log.Infof("%s", v)
-		}
-
-	}
-
 	var wg sync.WaitGroup
 	wg.Add(len(destinations))
 
