@@ -1,2 +1,5 @@
 
 config/**
+exec/credentials.json
+exec/Promo.md
+exec/tpryan.yaml

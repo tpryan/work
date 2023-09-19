@@ -1,9 +1,12 @@
 package work
 
 import (
+	"bytes"
 	"fmt"
 	"net/url"
+	"sort"
 	"strings"
+	"text/template"
 	"time"
 )
 
@@ -113,6 +116,7 @@ func uniform(s string) string {
 // it adjusts for shortcuts for buganizer and critique
 func (a Artifacts) Search(link string) Artifact {
 	for _, art := range a {
+
 		if strings.Contains(uniform(art.Link), uniform(link)) ||
 			strings.Contains(uniform(link), uniform(art.Link)) {
 			return art
@@ -123,6 +127,7 @@ func (a Artifacts) Search(link string) Artifact {
 			strings.Contains(link, "b/") {
 			sl := strings.Split(link, "/")
 			tmp := sl[len(sl)-1]
+
 			if strings.Contains(link, tmp) {
 				return art
 			}
@@ -132,6 +137,101 @@ func (a Artifacts) Search(link string) Artifact {
 	}
 
 	return Artifact{}
+}
+
+func (a Artifacts) Copy() Artifacts {
+	result := Artifacts{}
+
+	for _, v := range a {
+		result = append(result, v.Copy())
+	}
+	return result
+}
+
+func (a *Artifacts) Sort() {
+	sort.Slice((*a), func(i, j int) bool {
+		return (*a)[i].ShippedDate.Before((*a)[j].ShippedDate)
+	})
+}
+
+func (a *Artifacts) SortReport() {
+	sort.Slice((*a), func(i, j int) bool {
+		if (*a)[i].Project == (*a)[j].Project {
+			if (*a)[i].Subproject == (*a)[j].Subproject {
+				if (*a)[i].Type == (*a)[j].Type {
+					return (*a)[i].ShippedDate.Before((*a)[j].ShippedDate)
+				}
+				return (*a)[i].Type < (*a)[j].Type
+			}
+			return (*a)[i].Subproject < (*a)[j].Subproject
+		}
+		return (*a)[i].Project < (*a)[j].Project
+	})
+}
+
+func (a Artifacts) Template(label string) (string, error) {
+	a.SortReport()
+	a.FillInSubs()
+
+	ds := map[string]map[string]map[string][]string{}
+
+	for _, art := range a {
+		if _, ok := ds[art.Project]; !ok {
+			ds[art.Project] = map[string]map[string][]string{}
+		}
+		if _, ok := ds[art.Project][art.Subproject]; !ok {
+			ds[art.Project][art.Subproject] = map[string][]string{}
+		}
+
+		ds[art.Project][art.Subproject][art.Type] = append(ds[art.Project][art.Subproject][art.Type], art.Link)
+	}
+
+	type report struct {
+		Title   string
+		Details map[string]map[string]map[string][]string
+	}
+
+	r := report{label, ds}
+
+	text := `# {{.Title}}
+{{range $Project, $Subproject  := .Details}}
+## {{$Project}}
+{{range $Subproject_text, $Type  := $Subproject}}
+### {{$Subproject_text}}
+{{range $Type_text, $Link  := $Type}}
+#### {{$Type_text}}
+{{range $Url  := $Link}}
+* {{$Url}}{{end}}
+{{end}}
+{{end}}
+{{end}}
+
+`
+
+	t, err := template.New("md").Parse(text)
+	if err != nil {
+		return "", fmt.Errorf("could not parse template: %s", err)
+	}
+
+	var tpl bytes.Buffer
+
+	if err := t.Execute(&tpl, r); err != nil {
+		return "", fmt.Errorf("could not execute template: %s", err)
+	}
+
+	return tpl.String(), nil
+}
+
+func (a *Artifacts) FillInSubs() {
+	result := Artifacts{}
+
+	for _, art := range *a {
+		if art.Subproject == "" {
+			art.Subproject = "N/A"
+		}
+		result = append(result, art)
+	}
+	*a = result
 }
 
 // Option is function that alters a list of Artifacts

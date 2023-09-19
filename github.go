@@ -55,7 +55,9 @@ func GHSearch(q string) (Artifacts, error) {
 		}
 
 		for _, v := range (*result).Issues {
-			results = append(results, &v)
+			// redirect here because there were issues with pass by value
+			tmp := v
+			results = append(results, &tmp)
 		}
 
 		page = response.NextPage

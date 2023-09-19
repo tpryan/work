@@ -611,6 +611,250 @@ func TestArtifactsOptionExcludeTitle(t *testing.T) {
 	}
 }
 
+func TestArtifactsCopy(t *testing.T) {
+	tests := map[string]struct {
+		in   Artifacts
+		want Artifacts
+	}{
+		"basic": {
+			in: Artifacts{
+				Artifact{
+					Title: "Test",
+				},
+			},
+			want: Artifacts{
+				Artifact{
+					Title: "Test",
+				},
+			},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			got := tc.in.Copy()
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestArtifactsSortReport(t *testing.T) {
+	tests := map[string]struct {
+		in   Artifacts
+		want Artifacts
+	}{
+		"basic": {
+			in: Artifacts{
+				Artifact{
+					ShippedDate: time.Date(2023, 9, 21, 12, 0, 0, 0, time.UTC),
+				},
+				Artifact{
+					ShippedDate: time.Date(2023, 8, 21, 12, 0, 0, 0, time.UTC),
+				},
+			},
+			want: Artifacts{
+				Artifact{
+					ShippedDate: time.Date(2023, 8, 21, 12, 0, 0, 0, time.UTC),
+				},
+				Artifact{
+					ShippedDate: time.Date(2023, 9, 21, 12, 0, 0, 0, time.UTC),
+				},
+			},
+		},
+		"project": {
+			in: Artifacts{
+				Artifact{
+					Project:     "ATest",
+					ShippedDate: time.Date(2023, 9, 21, 12, 0, 0, 0, time.UTC),
+				},
+				Artifact{
+					Project:     "BTest",
+					ShippedDate: time.Date(2023, 8, 21, 12, 0, 0, 0, time.UTC),
+				},
+			},
+			want: Artifacts{
+				Artifact{
+					Project:     "ATest",
+					ShippedDate: time.Date(2023, 9, 21, 12, 0, 0, 0, time.UTC),
+				},
+				Artifact{
+					Project:     "BTest",
+					ShippedDate: time.Date(2023, 8, 21, 12, 0, 0, 0, time.UTC),
+				},
+			},
+		},
+		"subproject": {
+			in: Artifacts{
+				Artifact{
+					Project:     "ATest",
+					Subproject:  "BSub",
+					ShippedDate: time.Date(2023, 9, 21, 12, 0, 0, 0, time.UTC),
+				},
+				Artifact{
+					Project:     "ATest",
+					Subproject:  "ASub",
+					ShippedDate: time.Date(2023, 8, 21, 12, 0, 0, 0, time.UTC),
+				},
+			},
+			want: Artifacts{
+				Artifact{
+					Project:     "ATest",
+					Subproject:  "ASub",
+					ShippedDate: time.Date(2023, 8, 21, 12, 0, 0, 0, time.UTC),
+				},
+				Artifact{
+					Project:     "ATest",
+					Subproject:  "BSub",
+					ShippedDate: time.Date(2023, 9, 21, 12, 0, 0, 0, time.UTC),
+				},
+			},
+		},
+		"type": {
+			in: Artifacts{
+				Artifact{
+					Project:     "ATest",
+					Subproject:  "ASub",
+					Type:        "Bug",
+					ShippedDate: time.Date(2023, 9, 21, 12, 0, 0, 0, time.UTC),
+				},
+				Artifact{
+					Project:     "ATest",
+					Subproject:  "ASub",
+					Type:        "CL",
+					ShippedDate: time.Date(2023, 8, 21, 12, 0, 0, 0, time.UTC),
+				},
+			},
+			want: Artifacts{
+
+				Artifact{
+					Project:     "ATest",
+					Subproject:  "ASub",
+					Type:        "Bug",
+					ShippedDate: time.Date(2023, 9, 21, 12, 0, 0, 0, time.UTC),
+				},
+				Artifact{
+					Project:     "ATest",
+					Subproject:  "ASub",
+					Type:        "CL",
+					ShippedDate: time.Date(2023, 8, 21, 12, 0, 0, 0, time.UTC),
+				},
+			},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			tc.in.SortReport()
+			assert.Equal(t, tc.want, tc.in)
+		})
+	}
+}
+
+func TestArtifactsSort(t *testing.T) {
+	tests := map[string]struct {
+		in   Artifacts
+		want Artifacts
+	}{
+		"withdate": {
+			in: Artifacts{
+				Artifact{
+					ShippedDate: time.Date(2023, 9, 21, 12, 0, 0, 0, time.UTC),
+				},
+				Artifact{
+					ShippedDate: time.Date(2023, 8, 21, 12, 0, 0, 0, time.UTC),
+				},
+			},
+			want: Artifacts{
+				Artifact{
+					ShippedDate: time.Date(2023, 8, 21, 12, 0, 0, 0, time.UTC),
+				},
+				Artifact{
+					ShippedDate: time.Date(2023, 9, 21, 12, 0, 0, 0, time.UTC),
+				},
+			},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			tc.in.Sort()
+			assert.Equal(t, tc.want, tc.in)
+		})
+	}
+}
+
+func TestArtifactsFillInSubs(t *testing.T) {
+	tests := map[string]struct {
+		in   Artifacts
+		want Artifacts
+	}{
+		"withdate": {
+			in: Artifacts{
+				Artifact{
+					Project: "Test",
+				},
+			},
+			want: Artifacts{
+				Artifact{
+					Project:    "Test",
+					Subproject: "N/A",
+				},
+			},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			tc.in.FillInSubs()
+			assert.Equal(t, tc.want, tc.in)
+		})
+	}
+}
+
+func TestArtifactsTemplate(t *testing.T) {
+	tests := map[string]struct {
+		in   Artifacts
+		err  error
+		want string
+	}{
+		"withdate": {
+			in: Artifacts{
+				Artifact{
+					Project:    "Test",
+					Subproject: "SubTest",
+					Type:       "CL",
+					Link:       "http://example.com",
+				},
+			},
+			want: `# PageTitle
+
+## Test
+
+### SubTest
+
+#### CL
+
+* http://example.com
+
+
+
+
+`,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			got, err := tc.in.Template("PageTitle")
+			if tc.err == nil && err != nil {
+				t.Fatalf("expected no error, got: %s", err)
+			}
+
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
 func TestArtifactsSearch(t *testing.T) {
 	tests := map[string]struct {
 		artifacts Artifacts
