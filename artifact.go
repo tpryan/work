@@ -57,7 +57,7 @@ func (a Artifact) Hyperlink() string {
 	title := a.Link
 
 	if strings.Contains(a.Link, "critique.corp.google.com") {
-		title = strings.ReplaceAll(a.Link, "//critique.corp.google.com/", "//cl")
+		title = strings.ReplaceAll(a.Link, "//critique.corp.google.com", "//cl")
 	}
 
 	if strings.Contains(a.Link, "buganizer.corp.google.com") {
@@ -468,6 +468,14 @@ func (c Classifiers) Stamp(art Artifact) Artifact {
 			if key == "link" {
 				for _, v := range value {
 					if strings.Contains(uniform(art.Link), uniform(v)) {
+						art.Project = list.Project
+						art.Subproject = list.Subproject
+					}
+				}
+			}
+			if key == "project" {
+				for _, v := range value {
+					if strings.Contains(uniform(art.Project), uniform(v)) {
 						art.Project = list.Project
 						art.Subproject = list.Subproject
 					}
