@@ -54,28 +54,23 @@ func main() {
 
 	gsheet := work.NewGSheet(*sheetsSVC, config.SpreadSheetID)
 
-	// log.Infof("Processing Github")
-	// if err := processGithub(gsheet); err != nil {
-	// 	log.Error("unable to retrieve latest github info: %s", err)
-	// }
+	log.Infof("Processing Github")
+	if err := processGithub(config.GithubUser, gsheet); err != nil {
+		log.Error("unable to retrieve latest github info: %s", err)
+	}
 
-	// log.Infof("Processing Drive")
-	// if err := processDrive(driveSVC, gsheet); err != nil {
-	// 	log.Errorf("unable to retrieve latest drive info: %s", err)
-	// }
+	if config.QueryDrive {
+		log.Infof("Processing Drive")
+		if err := processDrive(driveSVC, gsheet); err != nil {
+			log.Errorf("unable to retrieve latest drive info: %s", err)
+		}
+	}
 
 	log.Infof("Writing report")
 	if err := writeReport(gsheet, config.Sources, config.Destinations, config.Classifiers); err != nil {
 		log.Error(fmt.Sprintf("unable to write report to sheets: %s", err))
 	}
 	log.Infof("...Finished")
-
-	_ = config
-	_ = ctx
-	_ = options
-	_ = driveSVC
-	_ = sheetsSVC
-	_ = gsheet
 
 }
 
@@ -124,22 +119,22 @@ func processDrive(svc *drive.Service, gsheet work.GSheet) error {
 
 	arts.Sort()
 
-	if err := gsheet.ToSheet("DriveFiles", arts); err != nil {
+	if err := gsheet.ToSheet("Source - DriveFiles", arts); err != nil {
 		return fmt.Errorf("error writing to sheet: %w", err)
 	}
 
 	return nil
 }
 
-func processGithub(gsheet work.GSheet) error {
-	q := "author:tpryan is:pr state:closed"
+func processGithub(username string, gsheet work.GSheet) error {
+	q := fmt.Sprintf("author:%s is:pr state:closed", username)
 
 	gartifacts, err := work.GHSearch(q)
 	if err != nil {
 		return fmt.Errorf("could not get issues: %w", err)
 	}
 
-	if err := gsheet.ToSheet("Github", gartifacts); err != nil {
+	if err := gsheet.ToSheet("Source - Github", gartifacts); err != nil {
 		return fmt.Errorf("error writing to sheet: %w", err)
 	}
 

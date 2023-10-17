@@ -45,9 +45,11 @@ func NewClientOption(ctx context.Context, r io.Reader, scopes []string) (option.
 // Config is the collection of settings that will direct artifact collection
 type Config struct {
 	SpreadSheetID string       `yaml:"spread_sheet_id,omitempty"`
+	GithubUser    string       `yaml:"github_user,omitempty"`
 	Destinations  Destinations `yaml:"destinations,omitempty"`
 	Sources       []string     `yaml:"sources,omitempty"`
 	Classifiers   Classifiers  `yaml:"classifiers,omitempty"`
+	QueryDrive    bool         `yaml:"query_drive,omitempty"`
 }
 
 // NewConfig returna a config from a given path
