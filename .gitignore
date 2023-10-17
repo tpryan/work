@@ -1,13 +1,9 @@
 
 config/**
-exec/credentials.json
-exec/Promo.md
-exec/tpryan.yaml
-exec/alexlucas.yaml
-exec/yufengg.yaml
-exec/users/alexlucas.yaml
-exec/users/tpryan.yaml
-exec/users/yufengg.yaml
-exec/credentials/drive_credentials.json
-exec/credentials/credentials.json
-exec/credentials/token.json
+**/credentials.json
+**/Promo.md
+**/alexlucas.yaml
+**/tpryan.yaml
+**/yufengg.yaml
+**/drive_credentials.json
+**/token.json
