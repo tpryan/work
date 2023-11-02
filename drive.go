@@ -68,6 +68,7 @@ func (d DriveFiles) Artifacts() Artifacts {
 			"application/vnd.google-apps.document":     "Doc",
 			"application/vnd.google-apps.presentation": "Slides",
 			"application/vnd.google.colaboratory.corp": "Colab",
+			"application/vnd.google-apps.form":         "Form",
 		}
 
 		if a.Type == "" {

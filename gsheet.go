@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/log"
 	"google.golang.org/api/sheets/v4"
 )
 
@@ -416,12 +417,34 @@ func extractString(val sheets.CellData) string {
 }
 
 func extractTime(val sheets.CellData) time.Time {
-	if val.EffectiveValue != nil && val.EffectiveValue.NumberValue != nil {
-		d := int(*val.EffectiveValue.NumberValue) - 2
-		epochDate := time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC)
-		result := epochDate.AddDate(0, 0, d)
-		return result
+	sqlformat := "2006-01-02 15:04:05.999999-07"
+	otherformat := "01/02/2006"
+	if val.EffectiveValue != nil {
+		if val.EffectiveValue.NumberValue != nil {
+			d := int(*val.EffectiveValue.NumberValue) - 2
+			epochDate := time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC)
+			result := epochDate.AddDate(0, 0, d)
+			return result
+		}
 
+		if val.EffectiveValue.StringValue != nil {
+			result, err := time.Parse(sqlformat, *val.EffectiveValue.StringValue)
+			if err == nil {
+				return result
+			}
+
+			result2, err := time.Parse(otherformat, *val.EffectiveValue.StringValue)
+			if err == nil {
+				return result2
+			}
+		}
+		tmp, err := val.EffectiveValue.MarshalJSON()
+		if err != nil {
+			log.Errorf("could not get json for: (%v) :%s", val.EffectiveValue, err)
+			return time.Time{}
+		}
+		log.Warnf("Was asked to translate a time and wasn't able to: %v", string(tmp))
 	}
+
 	return time.Time{}
 }

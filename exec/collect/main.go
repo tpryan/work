@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 	"sync"
@@ -14,20 +15,26 @@ import (
 	"google.golang.org/api/sheets/v4"
 )
 
-var user = "yufengg"
-var configPath = fmt.Sprintf("users/%s.yaml", user)
-var credPath = "credentials/credentials.json"
-var tokenFile = "credentials/token.json"
+var credPath = "../credentials/credentials.json"
+var tokenFile = "../credentials/token.json"
 var scopes = []string{
 	"https://www.googleapis.com/auth/drive",
 	"https://www.googleapis.com/auth/spreadsheets",
 }
 
 func main() {
-	ctx := context.Background()
-	log.Infof("Starting...")
+	var userFlag = flag.String("user", "", "user who should be run on")
+	flag.Parse()
 
-	log.Infof("Reading Config files")
+	user := *userFlag
+	if user == "" {
+		user = os.Getenv("USER")
+	}
+
+	var configPath = fmt.Sprintf("../users/%s.yaml", user)
+
+	ctx := context.Background()
+	log.Infof("Starting process for: %s...", user)
 
 	config, err := work.NewConfig(configPath)
 	if err != nil {
@@ -47,7 +54,7 @@ func main() {
 
 	log.Infof("Initializing clients")
 
-	b, err := os.ReadFile("credentials/drive_credentials.json")
+	b, err := os.ReadFile("../credentials/drive_credentials.json")
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
@@ -57,7 +64,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
-	client := work.GetClient("credentials/token.json", driveconfig)
+	client := work.GetClient(tokenFile, driveconfig)
 
 	driveSVC, err := drive.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
@@ -96,7 +103,7 @@ func processDrive(svc *drive.Service, gsheet work.GSheet, user string) error {
 	mlist := work.MimeList{
 		"application/vnd.google-apps.document",
 		"application/vnd.google-apps.spreadsheet",
-		"application/vnd.apple.keynote",
+		"application/vnd.google-apps.form",
 		"application/vnd.google-apps.presentation",
 		"application/vnd.google.colaboratory.corp",
 	}
