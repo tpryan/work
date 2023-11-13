@@ -7,3 +7,4 @@ config/**
 **/yufengg.yaml
 **/drive_credentials.json
 **/token.json
+**/agmsb.yaml
