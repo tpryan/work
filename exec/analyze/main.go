@@ -64,8 +64,7 @@ func main() {
 	report := map[string]map[string]map[string]map[string][]string{}
 
 	destinations := []string{
-		"2023 4q - 2024 1q",
-		"2023 2q - 2023 3q",
+		"2023 Annual",
 	}
 
 	for _, dest := range destinations {
