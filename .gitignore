@@ -9,3 +9,4 @@ config/**
 **/token.json
 **/agmsb.yaml
 exec/users/tklopfenstein.yaml
+testdata/test-creds.json

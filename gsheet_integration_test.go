@@ -14,7 +14,7 @@ import (
 
 var gsheetTestID = os.Getenv("WORK_gsheetTestID")
 var gsheetTestIDNoPerms = os.Getenv("WORK_gsheetTestIDNoPerms")
-var credsTestPath = "config/test-creds.json"
+var credsTestPath = "testdata/test-creds.json"
 
 func getTestSheetsSvc() (*sheets.Service, error) {
 	ctx := context.Background()
@@ -66,7 +66,7 @@ func TestGsheetSheetID(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-
+			t.Logf("envsheetid: %s", os.Getenv("WORK_gsheetTestID"))
 			gsheet := NewGSheet(*sheetsSVC, tc.id)
 
 			got, err := gsheet.SheetID(tc.in)

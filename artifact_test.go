@@ -872,6 +872,15 @@ func TestArtifactsSearch(t *testing.T) {
 				Link: "http://example.com/5678",
 			},
 		},
+		"basic_not_in": {
+			artifacts: Artifacts{
+				Artifact{
+					Link: "http://example.com",
+				},
+			},
+			in:   "http://example.com/56789",
+			want: Artifact{},
+		},
 		"nomatch": {
 			artifacts: Artifacts{
 				Artifact{
@@ -887,7 +896,7 @@ func TestArtifactsSearch(t *testing.T) {
 					Link: "http://critique.corp.google.com/cl/1234567",
 				},
 			},
-			in: "cl/123456",
+			in: "cl/1234567",
 			want: Artifact{
 				Link: "http://critique.corp.google.com/cl/1234567",
 			},
@@ -1141,8 +1150,12 @@ func TestClassifiersSearch(t *testing.T) {
 					},
 				},
 			},
-			in:   "http://example.com",
-			want: Artifact{},
+			in: "http://example.com",
+			want: Artifact{
+				Project:    "Example",
+				Subproject: "Something",
+				Link:       "http://example.com/12345",
+			},
 		},
 		"cl": {
 			classifiers: Classifiers{

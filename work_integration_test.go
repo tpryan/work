@@ -16,10 +16,10 @@ func TestNewClientOption(t *testing.T) {
 		errStr string
 	}{
 		"basic": {
-			path: credsTestPath,
+			path: "testdata/test-creds.json",
 		},
 		"error": {
-			path:   credsTestPath + "fail",
+			path:   "testdata/test-creds.json" + "fail",
 			errStr: "couldn't read the credential file",
 		},
 	}
@@ -48,19 +48,19 @@ func TestBasic(t *testing.T) {
 		errStr string
 	}{
 		"blank": {
-			in:   "config/blank.yaml",
+			in:   "testdata/blank.yaml",
 			want: &Config{},
 		},
 		"notExists": {
-			in:     "config/doesnotexist.yaml",
+			in:     "testdata/doesnotexist.yaml",
 			errStr: "no such file or directory",
 		},
 		"garbage": {
-			in:     "config/garbage.yaml",
+			in:     "testdata/garbage.yaml",
 			errStr: "couldn't parse the config file",
 		},
 		"basic": {
-			in: "config/basic.yaml",
+			in: "testdata/basic.yaml",
 			want: &Config{
 				SpreadSheetID: "123456789",
 				Sources:       []string{"Critique", "Buganizer"},

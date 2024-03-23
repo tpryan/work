@@ -58,6 +58,7 @@ func (a Artifact) Hyperlink() string {
 
 	if strings.Contains(a.Link, "critique.corp.google.com") {
 		title = strings.ReplaceAll(a.Link, "//critique.corp.google.com", "//cl")
+		title = strings.ReplaceAll(title, "//cl/cl/", "//cl/")
 	}
 
 	if strings.Contains(a.Link, "buganizer.corp.google.com") {
@@ -113,6 +114,15 @@ func uniform(s string) string {
 }
 
 func urlMatch(u1, u2 string) bool {
+
+	if !strings.HasPrefix(u1, "http") {
+		u1 = "http://" + u1
+	}
+
+	if !strings.HasPrefix(u2, "http") {
+		u2 = "http://" + u2
+	}
+
 	url1, err := url.Parse(u1)
 	if err != nil {
 		return false
@@ -141,8 +151,16 @@ func urlMatch(u1, u2 string) bool {
 		url2.Path = strings.Replace(url2.Path, "issues/", "", 1)
 	}
 
+	if url1.String() == url2.String() {
+		return true
+	}
+
 	if url1.Host != url2.Host {
 		return false
+	}
+
+	if strings.Contains(url1.String(), url2.String()) {
+		return true
 	}
 
 	if url1.Path != url2.Path {

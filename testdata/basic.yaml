@@ -1,0 +1,22 @@
+spread_sheet_id: 123456789
+sources:
+  - Critique
+  - Buganizer
+destinations:
+  - sheet: Test
+    sort: default
+    criteria: 
+        project: test
+        start: 2023-8-1
+        end: 2023-8-28
+classifiers: 
+  lists: 
+    - project: "Example"
+      subproject: "Something"
+      links: 
+        - http://example.com
+    - project: "Another"
+      subproject: "Something specific"
+      contains:
+        title:
+        - example
