@@ -8,13 +8,15 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/tpryan/work"
+	"github.com/tpryan/work/gsheet"
 	"google.golang.org/api/sheets/v4"
 )
 
 var printLinks = false
 
 var credPath = "../credentials/credentials.json"
-var tokenFile = "../credentials/token.json"
+
+// var tokenFile = "../credentials/token.json"
 var scopes = []string{
 	"https://www.googleapis.com/auth/drive",
 	"https://www.googleapis.com/auth/spreadsheets",
@@ -59,7 +61,7 @@ func main() {
 		log.Fatalf("unable to retrieve Sheets client: %v", err)
 	}
 
-	gsheet := work.NewGSheet(*sheetsSVC, config.SpreadSheetID)
+	gsheet := gsheet.NewGSheet(*sheetsSVC, config.SpreadSheetID)
 
 	report := map[string]map[string]map[string]map[string][]string{}
 
