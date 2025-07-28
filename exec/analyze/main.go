@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/tpryan/work"
 	"github.com/tpryan/work/gsheet"
+	"github.com/tpryan/work/option"
 	"google.golang.org/api/sheets/v4"
 )
 
@@ -49,7 +50,7 @@ func main() {
 		log.Fatalf("error while opening credentials: %s", err)
 	}
 
-	options, err := work.NewClientOption(ctx, f, scopes)
+	options, err := option.New(ctx, f, scopes)
 	if err != nil {
 		log.Fatalf("error while opening credentials: %s", err)
 	}

@@ -9,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/tpryan/work/artifact"
+	"github.com/tpryan/work/option"
 )
 
 func TestNewClientOption(t *testing.T) {
@@ -30,7 +31,7 @@ func TestNewClientOption(t *testing.T) {
 			ctx := context.Background()
 			f, _ := os.Open(tc.path)
 
-			_, err := NewClientOption(ctx, f, []string{""})
+			_, err := option.New(ctx, f, []string{""})
 
 			if tc.errStr == "" && err != nil {
 				t.Fatalf("got an error when expected none: %s", err)
