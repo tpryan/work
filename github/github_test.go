@@ -16,11 +16,11 @@ func TestGHIssuesArtifacts(t *testing.T) {
 	u := "https://example.com"
 
 	tests := map[string]struct {
-		in   GHIssues
+		in   Issues
 		want artifact.Artifacts
 	}{
 		"basic": {
-			in: GHIssues{
+			in: Issues{
 				&github.Issue{
 					Title:    &title,
 					ClosedAt: &closedAt,

@@ -70,7 +70,7 @@ func main() {
 		log.Fatalf("unable to retrieve Sheets client: %v", err)
 	}
 
-	gsheet := gsheet.NewGSheet(*sheetsSVC, config.SpreadSheetID)
+	gsheet := gsheet.New(*sheetsSVC, config.SpreadSheetID)
 
 	log.Infof("Processing Github")
 	if err := processGithub(config.GithubUser, gsheet); err != nil {
@@ -104,7 +104,7 @@ func processDrive(svc *gdrive.Service, gsheet gsheet.GSheet, user string) error 
 
 	query := fmt.Sprintf("'%s@google.com' in owners and (%s)", user, mlist.String())
 
-	arts, err := drive.DriveSearch(query, svc)
+	arts, err := drive.Search(query, svc)
 	if err != nil {
 		return fmt.Errorf("error retrieving data from drive: %w", err)
 	}
@@ -121,7 +121,7 @@ func processDrive(svc *gdrive.Service, gsheet gsheet.GSheet, user string) error 
 func processGithub(username string, gsheet gsheet.GSheet) error {
 	q := fmt.Sprintf("author:%s is:pr state:closed", username)
 
-	gartifacts, err := github.GHSearch(q)
+	gartifacts, err := github.Search(q)
 	if err != nil {
 		return fmt.Errorf("could not get issues: %w", err)
 	}

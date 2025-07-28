@@ -24,8 +24,8 @@ type GSheet struct {
 	id  string
 }
 
-// NewGSheet returns a new GSheet object to act as a datasource
-func NewGSheet(svc sheets.Service, sheetID string) GSheet {
+// New returns a new GSheet object to act as a datasource
+func New(svc sheets.Service, sheetID string) GSheet {
 	g := GSheet{svc: &svc, id: sheetID}
 	return g
 

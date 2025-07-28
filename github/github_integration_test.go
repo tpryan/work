@@ -48,7 +48,7 @@ func TestGHSearch(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			got, err := GHSearch(tc.q)
+			got, err := Search(tc.q)
 
 			if tc.errStr == "" && err != nil {
 				t.Fatalf("got an error when expected none: %s", err)

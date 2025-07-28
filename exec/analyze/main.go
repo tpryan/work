@@ -62,7 +62,7 @@ func main() {
 		log.Fatalf("unable to retrieve Sheets client: %v", err)
 	}
 
-	gsheet := gsheet.NewGSheet(*sheetsSVC, config.SpreadSheetID)
+	gsheet := gsheet.New(*sheetsSVC, config.SpreadSheetID)
 
 	report := map[string]map[string]map[string]map[string][]string{}
 

@@ -75,7 +75,7 @@ func TestDriveSearch(t *testing.T) {
 				t.Fatalf("Unable to retrieve Drive client: %v", err)
 			}
 
-			got, err := DriveSearch(tc.q, svc)
+			got, err := Search(tc.q, svc)
 
 			if tc.errStr == "" && err != nil {
 				t.Fatalf("got an error when expected none: %s", err)

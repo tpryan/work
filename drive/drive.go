@@ -79,8 +79,8 @@ func (d DriveFiles) Artifacts() artifact.Artifacts {
 	return arts
 }
 
-// DriveSearch  returns results from Google Drive as artifacts
-func DriveSearch(q string, svc *drive.Service) (artifact.Artifacts, error) {
+// Search  returns results from Google Drive as artifacts
+func Search(q string, svc *drive.Service) (artifact.Artifacts, error) {
 
 	files := DriveFiles{}
 	var pageToken string

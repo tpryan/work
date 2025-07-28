@@ -9,11 +9,11 @@ import (
 	"github.com/tpryan/work/artifact"
 )
 
-// GHIssues is a collection of github issues
-type GHIssues []*github.Issue
+// Issues is a collection of github issues
+type Issues []*github.Issue
 
 // Artifacts returns a collection of artifacts from a collection of github issues
-func (g GHIssues) Artifacts() artifact.Artifacts {
+func (g Issues) Artifacts() artifact.Artifacts {
 
 	linkreplacer := strings.NewReplacer("api.", "", "/repos/", "/")
 	gartifacts := artifact.Artifacts{}
@@ -34,8 +34,8 @@ func (g GHIssues) Artifacts() artifact.Artifacts {
 	return gartifacts
 }
 
-// GHSearch returns results from github as artifacts
-func GHSearch(q string) (artifact.Artifacts, error) {
+// Search returns results from github as artifacts
+func Search(q string) (artifact.Artifacts, error) {
 
 	results := []*github.Issue{}
 	page := 1
@@ -64,6 +64,6 @@ func GHSearch(q string) (artifact.Artifacts, error) {
 		page = response.NextPage
 	}
 
-	return GHIssues(results).Artifacts(), nil
+	return Issues(results).Artifacts(), nil
 
 }

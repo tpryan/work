@@ -70,7 +70,7 @@ func TestGsheetSheetID(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Logf("envsheetid: %s", tc.id)
-			gsheet := NewGSheet(*sheetsSVC, tc.id)
+			gsheet := New(*sheetsSVC, tc.id)
 			t.Logf("sheet id: %v", tc.id)
 
 			got, err := gsheet.SheetID(tc.in)
@@ -114,7 +114,7 @@ func TestGsheetClear(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 
-			gsheet := NewGSheet(*sheetsSVC, tc.id)
+			gsheet := New(*sheetsSVC, tc.id)
 
 			err := gsheet.Clear(tc.in)
 			assert.Equal(t, tc.err, err)
@@ -159,7 +159,7 @@ func TestGsheetAdd(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 
-			gsheet := NewGSheet(*sheetsSVC, tc.id)
+			gsheet := New(*sheetsSVC, tc.id)
 
 			err := gsheet.Add(tc.in)
 			if tc.errStr != "" && err != nil {
@@ -207,7 +207,7 @@ func TestGsheetDelete(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 
-			gsheet := NewGSheet(*sheetsSVC, tc.id)
+			gsheet := New(*sheetsSVC, tc.id)
 
 			if tc.create {
 				err := gsheet.Add(tc.in)
@@ -265,7 +265,7 @@ func TestGSheetArtifacts(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 
-			gsheet := NewGSheet(*sheetsSVC, tc.id)
+			gsheet := New(*sheetsSVC, tc.id)
 
 			got, err := gsheet.Artifacts(tc.in)
 			if tc.errStr == "" && err != nil {
@@ -337,7 +337,7 @@ func TestGSheetUpdateData(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 
-			gsheet := NewGSheet(*sheetsSVC, tc.id)
+			gsheet := New(*sheetsSVC, tc.id)
 
 			err := gsheet.UpdateData(tc.name, tc.in)
 			if tc.errStr == "" && err != nil {
@@ -434,7 +434,7 @@ func TestGSheetToSheet(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 
-			gsheet := NewGSheet(*sheetsSVC, tc.id)
+			gsheet := New(*sheetsSVC, tc.id)
 
 			err := gsheet.ToSheet(tc.name, tc.in)
 			if tc.errStr == "" && err != nil {
