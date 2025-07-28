@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
+	"github.com/tpryan/work/artifact"
 	"google.golang.org/api/sheets/v4"
 )
 
@@ -207,7 +208,7 @@ func (g *GSheet) FormatSheet(id int64) []*sheets.Request {
 
 // FormatRows generates batch requests to format individual rows of a row
 // where the rows consist of set of Artifacts
-func (g *GSheet) FormatRows(id int64, a Artifacts) []*sheets.Request {
+func (g *GSheet) FormatRows(id int64, a artifact.Artifacts) []*sheets.Request {
 
 	batchreq := &sheets.BatchUpdateSpreadsheetRequest{
 		Requests: []*sheets.Request{},
@@ -339,7 +340,7 @@ func (g *GSheet) ToSheet(name string, i Interfacer) error {
 	}
 
 	batchreq.Requests = append(batchreq.Requests, g.FormatSheet(id)...)
-	batchreq.Requests = append(batchreq.Requests, g.FormatRows(id, i.(Artifacts))...)
+	batchreq.Requests = append(batchreq.Requests, g.FormatRows(id, i.(artifact.Artifacts))...)
 
 	if _, err := g.svc.Spreadsheets.BatchUpdate(g.id, batchreq).Do(); err != nil {
 		return fmt.Errorf("sheets: failed to apply formatting %s", err)
@@ -368,8 +369,8 @@ func (g *GSheet) UpdateData(name string, i Interfacer) error {
 }
 
 // Artifacts returns a given sheet as Artifacts
-func (g *GSheet) Artifacts(name string) (Artifacts, error) {
-	as := Artifacts{}
+func (g *GSheet) Artifacts(name string) (artifact.Artifacts, error) {
+	as := artifact.Artifacts{}
 	ranges := []string{name}
 
 	resp, err := g.svc.Spreadsheets.Get(g.id).Ranges(ranges...).IncludeGridData(true).Do()
@@ -397,8 +398,8 @@ func (g *GSheet) Artifacts(name string) (Artifacts, error) {
 	return as, nil
 }
 
-func newArtifact(row *sheets.RowData) Artifact {
-	a := Artifact{}
+func newArtifact(row *sheets.RowData) artifact.Artifact {
+	a := artifact.Artifact{}
 	a.Type = strings.ReplaceAll(extractString(*row.Values[0]), "\n", "")
 	a.Project = extractString(*row.Values[1])
 	a.Subproject = extractString(*row.Values[2])

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/tpryan/work/artifact"
 )
 
 func TestGHSearch(t *testing.T) {
@@ -15,13 +16,13 @@ func TestGHSearch(t *testing.T) {
 
 	tests := map[string]struct {
 		q      string
-		want   Artifacts
+		want   artifact.Artifacts
 		errStr string
 	}{
 		"basic": {
 			q: "author:tpryan is:pr state:closed Added CFExecute Support",
-			want: Artifacts{
-				Artifact{
+			want: artifact.Artifacts{
+				artifact.Artifact{
 					Title:       title,
 					Role:        "author",
 					Type:        "Pull Request",
@@ -32,8 +33,8 @@ func TestGHSearch(t *testing.T) {
 		},
 		"error": {
 			q: "author:tpryan2 is:pr state:closed Added CFExecute Support",
-			want: Artifacts{
-				Artifact{
+			want: artifact.Artifacts{
+				artifact.Artifact{
 					Title:       title,
 					Role:        "author",
 					Type:        "Pull Request",

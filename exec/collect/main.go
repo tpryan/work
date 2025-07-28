@@ -11,7 +11,6 @@ import (
 	"github.com/tpryan/googleclient"
 	"github.com/tpryan/work"
 	"google.golang.org/api/drive/v2"
-	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
 
@@ -51,15 +50,15 @@ func main() {
 
 	log.Infof("Initializing clients")
 
-	client, err := googleclient.NewClient(driveCredsPath, tokenPath, scopes...)
-	if err != nil {
-		log.Fatalf("Unable to get google client: %v", err)
-	}
+	// client, err := googleclient.NewClient(driveCredsPath, tokenPath, scopes...)
+	// if err != nil {
+	// 	log.Fatalf("Unable to get google client: %v", err)
+	// }
 
-	driveSVC, err := drive.NewService(ctx, option.WithHTTPClient(client))
-	if err != nil {
-		log.Fatalf("unable to retrieve Drive client: %v", err)
-	}
+	// driveSVC, err := drive.NewService(ctx, option.WithHTTPClient(client))
+	// if err != nil {
+	// 	log.Fatalf("unable to retrieve Drive client: %v", err)
+	// }
 
 	sheetsSVC, err := sheets.NewService(ctx, options)
 	if err != nil {
@@ -73,18 +72,18 @@ func main() {
 		log.Error("unable to retrieve latest github info: %s", err)
 	}
 
-	if config.QueryDrive {
-		log.Infof("Processing Drive")
-		if err := processDrive(driveSVC, gsheet, user); err != nil {
-			log.Errorf("unable to retrieve latest drive info: %s", err)
-		}
-	}
+	// if config.QueryDrive {
+	// 	log.Infof("Processing Drive")
+	// 	if err := processDrive(driveSVC, gsheet, user); err != nil {
+	// 		log.Errorf("unable to retrieve latest drive info: %s", err)
+	// 	}
+	// }
 
-	log.Infof("Writing report")
-	if err := writeReport(gsheet, config.Sources, config.Destinations, config.Classifiers); err != nil {
-		log.Error(fmt.Sprintf("unable to write report to sheets: %s", err))
-	}
-	log.Infof("...Finished")
+	// log.Infof("Writing report")
+	// if err := writeReport(gsheet, config.Sources, config.Destinations, config.Classifiers); err != nil {
+	// 	log.Error(fmt.Sprintf("unable to write report to sheets: %s", err))
+	// }
+	// log.Infof("...Finished")
 
 }
 

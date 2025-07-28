@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/tpryan/work/artifact"
 	"google.golang.org/api/sheets/v4"
 )
 
@@ -111,13 +112,13 @@ func TestGsheetFormatSheet(t *testing.T) {
 func TestGsheetFormatRow(t *testing.T) {
 	tests := map[string]struct {
 		in        int64
-		artifacts Artifacts
+		artifacts artifact.Artifacts
 		want      []*sheets.Request
 	}{
 		"basic": {
 			in: 1,
-			artifacts: Artifacts{
-				Artifact{
+			artifacts: artifact.Artifacts{
+				artifact.Artifact{
 					Project:    "Project",
 					Subproject: "Subproject",
 					Title:      "Title",
@@ -128,8 +129,8 @@ func TestGsheetFormatRow(t *testing.T) {
 		},
 		"NoSubproject": {
 			in: 1,
-			artifacts: Artifacts{
-				Artifact{
+			artifacts: artifact.Artifacts{
+				artifact.Artifact{
 					Project: "Project",
 					Title:   "Title",
 					Type:    "Type",
@@ -161,8 +162,8 @@ func TestGsheetFormatRow(t *testing.T) {
 		},
 		"NoType": {
 			in: 1,
-			artifacts: Artifacts{
-				Artifact{
+			artifacts: artifact.Artifacts{
+				artifact.Artifact{
 					Project:    "Project",
 					Subproject: "Subproject",
 					Title:      "Title",
@@ -194,8 +195,8 @@ func TestGsheetFormatRow(t *testing.T) {
 		},
 		"NoProject": {
 			in: 1,
-			artifacts: Artifacts{
-				Artifact{
+			artifacts: artifact.Artifacts{
+				artifact.Artifact{
 					Subproject: "Subproject",
 					Title:      "Title",
 					Type:       "Type",

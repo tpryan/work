@@ -2,13 +2,13 @@ package work
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/tpryan/work/artifact"
 	"google.golang.org/api/drive/v2"
 )
 
@@ -37,14 +37,14 @@ func getTestDriveSvc() (*drive.Service, error) {
 func TestDriveSearch(t *testing.T) {
 	tests := map[string]struct {
 		q      string
-		want   Artifacts
+		want   artifact.Artifacts
 		errStr string
 	}{
 		"basic": {
 
 			q: "title contains 'Deploystack Performance Metrics' AND mimeType='application/vnd.google-apps.spreadsheet'",
-			want: Artifacts{
-				Artifact{
+			want: artifact.Artifacts{
+				artifact.Artifact{
 					Title:       "Deploystack Performance Metrics",
 					Link:        "https://docs.google.com/spreadsheets/d/1UqE9jEZA2G0kSwAducflfi9B7qjb9iMuDZcchAoxWzM/edit?usp=drivesdk",
 					Type:        "Sheet",
@@ -59,7 +59,7 @@ func TestDriveSearch(t *testing.T) {
 		"error": {
 
 			q:      "title contains 'Deploystack Performance Metrics",
-			want:   Artifacts{},
+			want:   artifact.Artifacts{},
 			errStr: "Invalid query, invalid",
 		},
 	}
@@ -69,7 +69,7 @@ func TestDriveSearch(t *testing.T) {
 
 			svc, err := getTestDriveSvc()
 			if err != nil {
-				t.Fatalf(fmt.Sprintf("Unable to retrieve Drive client: %v", err))
+				t.Fatalf("Unable to retrieve Drive client: %v", err)
 			}
 
 			got, err := DriveSearch(tc.q, svc)

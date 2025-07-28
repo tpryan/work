@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/tpryan/work/artifact"
 	"google.golang.org/api/drive/v2"
 )
 
@@ -37,7 +38,7 @@ func TestMimeListString(t *testing.T) {
 func TestDriveArtifacts(t *testing.T) {
 	tests := map[string]struct {
 		in   DriveFiles
-		want Artifacts
+		want artifact.Artifacts
 	}{
 		"sheet": {
 			in: DriveFiles{
@@ -48,8 +49,8 @@ func TestDriveArtifacts(t *testing.T) {
 					MimeType:      "application/vnd.google-apps.spreadsheet",
 				},
 			},
-			want: Artifacts{
-				Artifact{
+			want: artifact.Artifacts{
+				artifact.Artifact{
 					Title:       "title",
 					Link:        "https://example.com",
 					Type:        "Sheet",
@@ -67,8 +68,8 @@ func TestDriveArtifacts(t *testing.T) {
 					MimeType:      "application/vnd.google-apps.document",
 				},
 			},
-			want: Artifacts{
-				Artifact{
+			want: artifact.Artifacts{
+				artifact.Artifact{
 					Title:       "title",
 					Link:        "https://example.com",
 					Type:        "Doc",
@@ -86,8 +87,8 @@ func TestDriveArtifacts(t *testing.T) {
 					MimeType:      "application/vnd.google-apps.presentation",
 				},
 			},
-			want: Artifacts{
-				Artifact{
+			want: artifact.Artifacts{
+				artifact.Artifact{
 					Title:       "title",
 					Link:        "https://example.com",
 					Type:        "Slides",
@@ -105,8 +106,8 @@ func TestDriveArtifacts(t *testing.T) {
 					MimeType:      "application/vnd.adobe.pdf",
 				},
 			},
-			want: Artifacts{
-				Artifact{
+			want: artifact.Artifacts{
+				artifact.Artifact{
 					Title:       "title",
 					Link:        "https://example.com",
 					Type:        "File",
@@ -124,8 +125,8 @@ func TestDriveArtifacts(t *testing.T) {
 					MimeType:      "application/vnd.google-apps.spreadsheet",
 				},
 			},
-			want: Artifacts{
-				Artifact{
+			want: artifact.Artifacts{
+				artifact.Artifact{
 					Title:       "title",
 					Link:        "https://example.com",
 					Type:        "Sheet",
@@ -144,8 +145,8 @@ func TestDriveArtifacts(t *testing.T) {
 					MimeType:      "application/vnd.google-apps.document",
 				},
 			},
-			want: Artifacts{
-				Artifact{
+			want: artifact.Artifacts{
+				artifact.Artifact{
 					Title:       "title prd",
 					Link:        "https://example.com",
 					Type:        "Design Doc",

@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/stretchr/testify/assert"
+	"github.com/tpryan/work/artifact"
 )
 
 func TestGHIssuesArtifacts(t *testing.T) {
@@ -16,7 +17,7 @@ func TestGHIssuesArtifacts(t *testing.T) {
 
 	tests := map[string]struct {
 		in   GHIssues
-		want Artifacts
+		want artifact.Artifacts
 	}{
 		"basic": {
 			in: GHIssues{
@@ -26,8 +27,8 @@ func TestGHIssuesArtifacts(t *testing.T) {
 					URL:      &u,
 				},
 			},
-			want: Artifacts{
-				Artifact{
+			want: artifact.Artifacts{
+				artifact.Artifact{
 					Title:       title,
 					Role:        "author",
 					Type:        "Pull Request",

@@ -1,4 +1,4 @@
-package work
+package artifact
 
 import (
 	"bytes"
@@ -346,7 +346,7 @@ func ProjectFilter(project string) Option {
 
 		for _, art := range *a {
 
-			if strings.ToLower(art.Project) == strings.ToLower(project) {
+			if strings.EqualFold(art.Project, project) {
 				result = append(result, art)
 			}
 

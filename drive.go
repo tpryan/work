@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/tpryan/work/artifact"
 	"google.golang.org/api/drive/v2"
 )
 
@@ -29,9 +30,9 @@ func (m MimeList) String() string {
 type DriveFiles []*drive.File
 
 // Artifacts returns a collection of artifacts from a collection of drive files
-func (d DriveFiles) Artifacts() Artifacts {
+func (d DriveFiles) Artifacts() artifact.Artifacts {
 
-	arts := Artifacts{}
+	arts := artifact.Artifacts{}
 
 	for _, v := range d {
 
@@ -40,7 +41,7 @@ func (d DriveFiles) Artifacts() Artifacts {
 			shipped = time.Time{}
 		}
 
-		a := Artifact{
+		a := artifact.Artifact{
 			Title:       v.Title,
 			Link:        v.AlternateLink,
 			ShippedDate: shipped,
@@ -79,31 +80,23 @@ func (d DriveFiles) Artifacts() Artifacts {
 }
 
 // DriveSearch  returns results from Google Drive as artifacts
-func DriveSearch(q string, svc *drive.Service) (Artifacts, error) {
+func DriveSearch(q string, svc *drive.Service) (artifact.Artifacts, error) {
 
-	token := "NOTEMPTY"
 	files := DriveFiles{}
+	var pageToken string
 
-	for token != "" {
-
-		if token == "NOTEMPTY" {
-			token = ""
-		}
-
-		r, err := svc.Files.List().PageToken(token).Q(q).Do()
-
+	for {
+		r, err := svc.Files.List().PageToken(pageToken).Q(q).Do()
 		if err != nil {
 			return nil, fmt.Errorf("drive files list failed: %s", err)
 		}
 
-		if len(r.Items) > 0 {
-			for _, i := range r.Items {
-				files = append(files, i)
-			}
+		files = append(files, r.Items...)
+
+		pageToken = r.NextPageToken
+		if pageToken == "" {
+			break
 		}
-
-		token = r.NextPageToken
-
 	}
 	return files.Artifacts(), nil
 }

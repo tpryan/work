@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/tpryan/work/artifact"
 )
 
 func TestNewClientOption(t *testing.T) {
@@ -76,8 +77,8 @@ func TestBasic(t *testing.T) {
 					},
 				},
 
-				Classifiers: Classifiers{
-					Lists: []Classifier{
+				Classifiers: artifact.Classifiers{
+					Lists: []artifact.Classifier{
 						{
 							Project:    "Example",
 							Subproject: "Something",

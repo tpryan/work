@@ -2,13 +2,14 @@ package work
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/tpryan/work/artifact"
 	"google.golang.org/api/sheets/v4"
 )
 
@@ -43,7 +44,7 @@ func TestGsheetSheetID(t *testing.T) {
 
 	sheetsSVC, err := getTestSheetsSvc()
 	if err != nil {
-		t.Fatalf(fmt.Sprintf("Unable to retrieve Sheets client: %v", err))
+		t.Fatalf("Unable to retrieve Sheets client: %v", err)
 	}
 
 	tests := map[string]struct {
@@ -69,6 +70,7 @@ func TestGsheetSheetID(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Logf("envsheetid: %s", tc.id)
 			gsheet := NewGSheet(*sheetsSVC, tc.id)
+			t.Logf("sheet id: %v", tc.id)
 
 			got, err := gsheet.SheetID(tc.in)
 			if tc.errStr == "" && err != nil {
@@ -76,8 +78,10 @@ func TestGsheetSheetID(t *testing.T) {
 				t.Logf("spreadsheet id: %s", tc.id)
 				t.Fatalf("got an error when expected none: %s", err)
 			}
-			if tc.errStr != "" && strings.Contains(err.Error(), tc.errStr) {
-				t.Skip()
+			if tc.errStr != "" {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tc.errStr)
+				return
 			}
 			assert.Equal(t, tc.want, got)
 		})
@@ -87,7 +91,7 @@ func TestGsheetSheetID(t *testing.T) {
 func TestGsheetClear(t *testing.T) {
 	sheetsSVC, err := getTestSheetsSvc()
 	if err != nil {
-		t.Fatalf(fmt.Sprintf("Unable to retrieve Sheets client: %v", err))
+		t.Fatalf("Unable to retrieve Sheets client: %v", err)
 	}
 
 	tests := map[string]struct {
@@ -120,7 +124,7 @@ func TestGsheetClear(t *testing.T) {
 func TestGsheetAdd(t *testing.T) {
 	sheetsSVC, err := getTestSheetsSvc()
 	if err != nil {
-		t.Fatalf(fmt.Sprintf("Unable to retrieve Sheets client: %v", err))
+		t.Fatalf("Unable to retrieve Sheets client: %v", err)
 	}
 
 	tests := map[string]struct {
@@ -173,7 +177,7 @@ func TestGsheetAdd(t *testing.T) {
 func TestGsheetDelete(t *testing.T) {
 	sheetsSVC, err := getTestSheetsSvc()
 	if err != nil {
-		t.Fatalf(fmt.Sprintf("Unable to retrieve Sheets client: %v", err))
+		t.Fatalf("Unable to retrieve Sheets client: %v", err)
 	}
 
 	tests := map[string]struct {
@@ -226,20 +230,20 @@ func TestGSheetArtifacts(t *testing.T) {
 
 	sheetsSVC, err := getTestSheetsSvc()
 	if err != nil {
-		t.Fatalf(fmt.Sprintf("Unable to retrieve Sheets client: %v", err))
+		t.Fatalf("Unable to retrieve Sheets client: %v", err)
 	}
 
 	tests := map[string]struct {
 		id     string
 		in     string
-		want   Artifacts
+		want   artifact.Artifacts
 		errStr string
 	}{
 		"basic": {
 			id: gsheetTestID,
 			in: "TestArtifacts",
-			want: Artifacts{
-				Artifact{
+			want: artifact.Artifacts{
+				artifact.Artifact{
 					Type:        "Website",
 					Project:     "DeployStack",
 					Subproject:  "Core Platform",
@@ -252,7 +256,7 @@ func TestGSheetArtifacts(t *testing.T) {
 		"BadName": {
 			id:     gsheetTestID,
 			in:     "TestArtifactsShouldBeBadNAme",
-			want:   Artifacts{},
+			want:   artifact.Artifacts{},
 			errStr: "input sheet does not exist",
 		},
 	}
@@ -281,20 +285,20 @@ func TestGSheetUpdateData(t *testing.T) {
 
 	sheetsSVC, err := getTestSheetsSvc()
 	if err != nil {
-		t.Fatalf(fmt.Sprintf("Unable to retrieve Sheets client: %v", err))
+		t.Fatalf("Unable to retrieve Sheets client: %v", err)
 	}
 
 	tests := map[string]struct {
 		id     string
 		name   string
-		in     Artifacts
+		in     artifact.Artifacts
 		errStr string
 	}{
 		"basic": {
 			id:   gsheetTestID,
 			name: "TestUpdateData",
-			in: Artifacts{
-				Artifact{
+			in: artifact.Artifacts{
+				artifact.Artifact{
 					Title:       time.Now().String(),
 					Type:        "test",
 					Project:     "Test",
@@ -315,8 +319,8 @@ func TestGSheetUpdateData(t *testing.T) {
 		"protected": {
 			id:   gsheetTestID,
 			name: "TestProtected",
-			in: Artifacts{
-				Artifact{
+			in: artifact.Artifacts{
+				artifact.Artifact{
 					Type:        "Website",
 					Project:     "DeployStack",
 					Subproject:  "Core Platform",
@@ -343,6 +347,9 @@ func TestGSheetUpdateData(t *testing.T) {
 			}
 
 			got, err := gsheet.Artifacts(tc.name)
+			if tc.errStr == "" {
+				require.NoError(t, err)
+			}
 
 			assert.Equal(t, tc.in, got)
 		})
@@ -353,21 +360,21 @@ func TestGSheetToSheet(t *testing.T) {
 
 	sheetsSVC, err := getTestSheetsSvc()
 	if err != nil {
-		t.Fatalf(fmt.Sprintf("Unable to retrieve Sheets client: %v", err))
+		t.Fatalf("Unable to retrieve Sheets client: %v", err)
 	}
 
 	tests := map[string]struct {
 		id     string
 		name   string
-		in     Artifacts
+		in     artifact.Artifacts
 		errStr string
 		clean  bool
 	}{
 		"basic": {
 			id:   gsheetTestID,
 			name: "TestToSheet",
-			in: Artifacts{
-				Artifact{
+			in: artifact.Artifacts{
+				artifact.Artifact{
 					Title:       time.Now().String(),
 					Type:        "test",
 					Project:     "Test",
@@ -381,8 +388,8 @@ func TestGSheetToSheet(t *testing.T) {
 		"basicWithCreate": {
 			id:   gsheetTestID,
 			name: "TestToSheetDoesNotExist",
-			in: Artifacts{
-				Artifact{
+			in: artifact.Artifacts{
+				artifact.Artifact{
 					Title:       time.Now().String(),
 					Type:        "test",
 					Project:     "Test",
@@ -397,7 +404,7 @@ func TestGSheetToSheet(t *testing.T) {
 		"empty": {
 			id:    gsheetTestID,
 			name:  "TestToSheetDoesNotExistEmpty",
-			in:    Artifacts{},
+			in:    artifact.Artifacts{},
 			clean: true,
 		},
 		"nameTooLong": {
@@ -409,8 +416,8 @@ func TestGSheetToSheet(t *testing.T) {
 		"protected": {
 			id:   gsheetTestID,
 			name: "TestProtected",
-			in: Artifacts{
-				Artifact{
+			in: artifact.Artifacts{
+				artifact.Artifact{
 					Type:        "Website",
 					Project:     "DeployStack",
 					Subproject:  "Core Platform",
@@ -437,6 +444,9 @@ func TestGSheetToSheet(t *testing.T) {
 			}
 
 			got, err := gsheet.Artifacts(tc.name)
+			if tc.errStr == "" {
+				require.NoError(t, err)
+			}
 
 			assert.Equal(t, tc.in, got)
 

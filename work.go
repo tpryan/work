@@ -11,6 +11,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/tpryan/work/artifact"
+
 	"golang.org/x/oauth2/jwt"
 	"google.golang.org/api/option"
 	"gopkg.in/yaml.v2"
@@ -19,21 +21,27 @@ import (
 // NewClientOption returns a clientOption from a given set of credentials.
 // Used to initialize Google API clients
 func NewClientOption(ctx context.Context, r io.Reader, scopes []string) (option.ClientOption, error) {
-	m := make(map[string]string)
+	creds := struct {
+		ClientEmail  string `json:"client_email"`
+		PrivateKey   string `json:"private_key"`
+		PrivateKeyID string `json:"private_key_id"`
+		TokenURL     string `json:"token_uri"`
+	}{}
 
 	buf := new(bytes.Buffer)
-	buf.ReadFrom(r)
-	dat := buf.Bytes()
+	if _, err := buf.ReadFrom(r); err != nil {
+		return nil, fmt.Errorf("could not read credentials: %w", err)
+	}
 
-	if err := json.Unmarshal(dat, &m); err != nil {
-		return nil, fmt.Errorf("error parsing credentials file: %s", err)
+	if err := json.Unmarshal(buf.Bytes(), &creds); err != nil {
+		return nil, fmt.Errorf("error unmarshaling credentials file: %w", err)
 	}
 
 	conf := &jwt.Config{
-		Email:        m["client_email"],
-		PrivateKey:   []byte(m["private_key"]),
-		PrivateKeyID: m["private_key_id"],
-		TokenURL:     m["token_uri"],
+		Email:        creds.ClientEmail,
+		PrivateKey:   []byte(creds.PrivateKey),
+		PrivateKeyID: creds.PrivateKeyID,
+		TokenURL:     creds.TokenURL,
 		Scopes:       scopes,
 	}
 
@@ -44,12 +52,12 @@ func NewClientOption(ctx context.Context, r io.Reader, scopes []string) (option.
 
 // Config is the collection of settings that will direct artifact collection
 type Config struct {
-	SpreadSheetID string       `yaml:"spread_sheet_id,omitempty"`
-	GithubUser    string       `yaml:"github_user,omitempty"`
-	Destinations  Destinations `yaml:"destinations,omitempty"`
-	Sources       []string     `yaml:"sources,omitempty"`
-	Classifiers   Classifiers  `yaml:"classifiers,omitempty"`
-	QueryDrive    bool         `yaml:"query_drive,omitempty"`
+	SpreadSheetID string               `yaml:"spread_sheet_id,omitempty"`
+	GithubUser    string               `yaml:"github_user,omitempty"`
+	Destinations  Destinations         `yaml:"destinations,omitempty"`
+	Sources       []string             `yaml:"sources,omitempty"`
+	Classifiers   artifact.Classifiers `yaml:"classifiers,omitempty"`
+	QueryDrive    bool                 `yaml:"query_drive,omitempty"`
 }
 
 // NewConfig returna a config from a given path

@@ -2,7 +2,7 @@ module exec
 
 go 1.22.0
 
-replace github.com/tpryan/googleclient => /Users/tpryan/go/src/github.com/tpryan/googleclient
+replace github.com/tpryan/googleclient => /Users/tpryan/Documents/GitHub/googleclient
 
 require (
 	github.com/charmbracelet/log v0.2.4

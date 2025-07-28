@@ -6,20 +6,21 @@ import (
 	"strings"
 
 	"github.com/google/go-github/github"
+	"github.com/tpryan/work/artifact"
 )
 
 // GHIssues is a collection of github issues
 type GHIssues []*github.Issue
 
 // Artifacts returns a collection of artifacts from a collection of github issues
-func (g GHIssues) Artifacts() Artifacts {
+func (g GHIssues) Artifacts() artifact.Artifacts {
 
 	linkreplacer := strings.NewReplacer("api.", "", "/repos/", "/")
-	gartifacts := Artifacts{}
+	gartifacts := artifact.Artifacts{}
 
 	for _, v := range g {
 
-		art := Artifact{
+		art := artifact.Artifact{
 			Type:        "Pull Request",
 			Role:        "author",
 			Title:       v.GetTitle(),
@@ -34,7 +35,7 @@ func (g GHIssues) Artifacts() Artifacts {
 }
 
 // GHSearch returns results from github as artifacts
-func GHSearch(q string) (Artifacts, error) {
+func GHSearch(q string) (artifact.Artifacts, error) {
 
 	results := []*github.Issue{}
 	page := 1
@@ -51,7 +52,7 @@ func GHSearch(q string) (Artifacts, error) {
 
 		result, response, err := client.Search.Issues(context.Background(), q, opts)
 		if err != nil {
-			return nil, fmt.Errorf("github: could not search ecvents: %s", err)
+			return nil, fmt.Errorf("github: could not search events: %s", err)
 		}
 
 		for _, v := range (*result).Issues {
@@ -63,9 +64,6 @@ func GHSearch(q string) (Artifacts, error) {
 		page = response.NextPage
 	}
 
-	var gh GHIssues
-	gh = results
-
-	return gh.Artifacts(), nil
+	return GHIssues(results).Artifacts(), nil
 
 }
