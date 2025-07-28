@@ -1,11 +1,7 @@
 package drive
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"fmt"
-	"io"
 	"os"
 	"strings"
 	"testing"
@@ -13,45 +9,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/tpryan/work/artifact"
-	"golang.org/x/oauth2/jwt"
+	"github.com/tpryan/work/option"
 	"google.golang.org/api/drive/v2"
-	"google.golang.org/api/option"
 )
 
 var credsTestPath = "../testdata/test-creds.json"
-
-// TODO: Dedupe this function
-// NewClientOption returns a clientOption from a given set of credentials.
-// Used to initialize Google API clients
-func NewClientOption(ctx context.Context, r io.Reader, scopes []string) (option.ClientOption, error) {
-	creds := struct {
-		ClientEmail  string `json:"client_email"`
-		PrivateKey   string `json:"private_key"`
-		PrivateKeyID string `json:"private_key_id"`
-		TokenURL     string `json:"token_uri"`
-	}{}
-
-	buf := new(bytes.Buffer)
-	if _, err := buf.ReadFrom(r); err != nil {
-		return nil, fmt.Errorf("could not read credentials: %w", err)
-	}
-
-	if err := json.Unmarshal(buf.Bytes(), &creds); err != nil {
-		return nil, fmt.Errorf("error unmarshaling credentials file: %w", err)
-	}
-
-	conf := &jwt.Config{
-		Email:        creds.ClientEmail,
-		PrivateKey:   []byte(creds.PrivateKey),
-		PrivateKeyID: creds.PrivateKeyID,
-		TokenURL:     creds.TokenURL,
-		Scopes:       scopes,
-	}
-
-	client := option.WithHTTPClient(conf.Client(ctx))
-
-	return client, nil
-}
 
 func getTestDriveSvc() (*drive.Service, error) {
 	ctx := context.Background()
@@ -61,7 +23,7 @@ func getTestDriveSvc() (*drive.Service, error) {
 		return nil, err
 	}
 
-	config, err := NewClientOption(ctx, f, []string{"https://www.googleapis.com/auth/drive"})
+	config, err := option.New(ctx, f, []string{"https://www.googleapis.com/auth/drive"})
 	if err != nil {
 		return nil, err
 	}
