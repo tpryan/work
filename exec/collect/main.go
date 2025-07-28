@@ -8,15 +8,16 @@ import (
 	"sync"
 
 	"github.com/charmbracelet/log"
+	"github.com/tpryan/googleclient"
 	"github.com/tpryan/work"
-	"golang.org/x/oauth2/google"
 	"google.golang.org/api/drive/v2"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
 
 var credPath = "../credentials/credentials.json"
-var tokenFile = "../credentials/token.json"
+var driveCredsPath = "../credentials/drive_credentials.json"
+var tokenPath = "../credentials/token.json"
 var scopes = []string{
 	"https://www.googleapis.com/auth/drive",
 	"https://www.googleapis.com/auth/spreadsheets",
@@ -42,29 +43,18 @@ func main() {
 	}
 
 	log.Infof("Reading Credential files")
-	f, err := os.Open(credPath)
-	if err != nil {
-		log.Fatalf("error while opening credentials: %s", err)
-	}
 
-	options, err := work.NewClientOption(ctx, f, scopes)
+	options, err := googleclient.NewClientOption(ctx, credPath, scopes)
 	if err != nil {
 		log.Fatalf("error while opening credentials: %s", err)
 	}
 
 	log.Infof("Initializing clients")
 
-	b, err := os.ReadFile("../credentials/drive_credentials.json")
+	client, err := googleclient.NewClient(driveCredsPath, tokenPath, scopes...)
 	if err != nil {
-		log.Fatalf("Unable to read client secret file: %v", err)
+		log.Fatalf("Unable to get google client: %v", err)
 	}
-
-	// If modifying these scopes, delete your previously saved token.json.
-	driveconfig, err := google.ConfigFromJSON(b, drive.DriveMetadataReadonlyScope)
-	if err != nil {
-		log.Fatalf("Unable to parse client secret file to config: %v", err)
-	}
-	client := work.GetClient(tokenFile, driveconfig)
 
 	driveSVC, err := drive.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
@@ -109,31 +99,6 @@ func processDrive(svc *drive.Service, gsheet work.GSheet, user string) error {
 	}
 
 	query := fmt.Sprintf("'%s@google.com' in owners and (%s)", user, mlist.String())
-
-	// for token != "" {
-
-	// 	if token == "NOTEMPTY" {
-	// 		token = ""
-	// 	}
-
-	// 	r, err := svc.Files.List().PageToken(token).
-	// 		Corpora("user").
-	// 		Q(query).
-	// 		Do()
-
-	// 	if err != nil {
-	// 		return fmt.Errorf("drive files list failed: %s", err)
-	// 	}
-
-	// 	if len(r.Items) > 0 {
-	// 		for _, i := range r.Items {
-	// 			files = append(files, i)
-	// 		}
-	// 	}
-
-	// 	token = r.NextPageToken
-
-	// }
 
 	arts, err := work.DriveSearch(query, svc)
 	if err != nil {

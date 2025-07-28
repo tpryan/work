@@ -12,7 +12,8 @@ import (
 	"google.golang.org/api/sheets/v4"
 )
 
-var gsheetTestID = os.Getenv("WORK_gsheetTestID")
+// var gsheetTestID = os.Getenv("WORK_gsheetTestID")
+var gsheetTestID = "1T3DDzZCSXp31uG6yY_sc_IRmnfLFxrHIKCbZi6noDRM"
 var gsheetTestIDNoPerms = os.Getenv("WORK_gsheetTestIDNoPerms")
 var credsTestPath = "testdata/test-creds.json"
 
@@ -66,7 +67,7 @@ func TestGsheetSheetID(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			t.Logf("envsheetid: %s", os.Getenv("WORK_gsheetTestID"))
+			t.Logf("envsheetid: %s", tc.id)
 			gsheet := NewGSheet(*sheetsSVC, tc.id)
 
 			got, err := gsheet.SheetID(tc.in)

@@ -1,11 +1,15 @@
 module exec
 
-go 1.21.1
+go 1.22.0
+
+replace github.com/tpryan/googleclient => /Users/tpryan/go/src/github.com/tpryan/googleclient
 
 require (
 	github.com/charmbracelet/log v0.2.4
 	github.com/tpryan/work v0.0.0-20230919205814-abeea25e5ba8
+	golang.org/x/oauth2 v0.18.0
 	google.golang.org/api v0.142.0
+
 )
 
 require (
@@ -28,12 +32,12 @@ require (
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/tpryan/googleclient v0.0.0-00010101000000-000000000000 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/crypto v0.13.0 // indirect
-	golang.org/x/net v0.15.0 // indirect
-	golang.org/x/oauth2 v0.12.0 // indirect
-	golang.org/x/sys v0.12.0 // indirect
-	golang.org/x/text v0.13.0 // indirect
+	golang.org/x/crypto v0.21.0 // indirect
+	golang.org/x/net v0.22.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230913181813-007df8e322eb // indirect
 	google.golang.org/grpc v1.57.0 // indirect

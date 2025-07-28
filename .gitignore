@@ -2,6 +2,7 @@
 config/**
 **/credentials.json
 **/Promo.md
+**/users/** 
 **/alexlucas.yaml
 **/tpryan.yaml
 **/yufengg.yaml
