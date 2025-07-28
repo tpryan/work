@@ -18,7 +18,7 @@ import (
 	"google.golang.org/api/option"
 )
 
-var credsTestPath = "testdata/test-creds.json"
+var credsTestPath = "../testdata/test-creds.json"
 
 // TODO: Dedupe this function
 // NewClientOption returns a clientOption from a given set of credentials.
