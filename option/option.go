@@ -14,6 +14,10 @@ import (
 // New returns a clientOption from a given set of credentials.
 // Used to initialize Google API clients
 func New(ctx context.Context, r io.Reader, scopes []string) (option.ClientOption, error) {
+	if r == nil {
+		return nil, fmt.Errorf("reader cannot be nil")
+	}
+
 	creds := struct {
 		ClientEmail  string `json:"client_email"`
 		PrivateKey   string `json:"private_key"`
