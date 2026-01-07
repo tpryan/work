@@ -1,0 +1,49 @@
+package github
+
+import (
+	"testing"
+	"time"
+
+	"github.com/google/go-github/github"
+	"github.com/stretchr/testify/assert"
+	"github.com/tpryan/work/internal/artifact"
+)
+
+func TestGHIssuesArtifacts(t *testing.T) {
+
+	title := "title"
+	closedAt := time.Now()
+	u := "https://example.com"
+
+	tests := map[string]struct {
+		in   Issues
+		want artifact.Artifacts
+	}{
+		"basic": {
+			in: Issues{
+				&github.Issue{
+					Title:    &title,
+					ClosedAt: &closedAt,
+					URL:      &u,
+				},
+			},
+			want: artifact.Artifacts{
+				artifact.Artifact{
+					Title:       title,
+					Role:        "author",
+					Type:        "Pull Request",
+					Link:        u,
+					Project:     "/example.com",
+					ShippedDate: closedAt,
+				},
+			},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			got := tc.in.Artifacts()
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}

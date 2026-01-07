@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/tpryan/work/artifact"
-	"github.com/tpryan/work/option"
+	"github.com/tpryan/work/internal/artifact"
+	"github.com/tpryan/work/internal/option"
 )
 
 func TestNewClientOption(t *testing.T) {

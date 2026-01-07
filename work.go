@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/tpryan/work/artifact"
+	"github.com/tpryan/work/internal/artifact"
 
 	"gopkg.in/yaml.v2"
 )
