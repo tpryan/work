@@ -30,6 +30,6 @@ The current structure has some "leaky abstractions" where internal details are e
 * **Struct Tags:** Ensure all fields in `Artifact` that are intended for Sheet output are clearly mapped. You currently use a slice of interfaces for Sheet updates, which is manual and error-prone. Consider a reflection-based approach or a dedicated `Marshaler` to convert `Artifact` to row data. -->
 
 ### 5. Code Cleanliness (The "Mess")
-* **Dead Code:** `internal/googleauth/client.go` contains a lot of commented-out reasoning and redundant `NewClientOption` logic. Clean these up to make the intent clear.
-* **Consistency:** The `.gitignore` suggests many user-specific YAML files are being tracked or ignored individually. Use a pattern like `users/*.yaml` to keep the root clean.
+<!-- * **Dead Code:** `internal/googleauth/client.go` contains a lot of commented-out reasoning and redundant `NewClientOption` logic. Clean these up to make the intent clear. -->
+<!-- * **Consistency:** The `.gitignore` suggests many user-specific YAML files are being tracked or ignored individually. Use a pattern like `users/*.yaml` to keep the root clean. -->
 * **Makefile:** The current `Makefile` is very minimal. Add targets for `lint`, `fmt`, and `build` to automate the cleanup of the "mess" during development.

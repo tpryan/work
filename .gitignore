@@ -2,13 +2,10 @@
 config/**
 **/credentials.json
 **/Promo.md
-**/users/** 
-**/alexlucas.yaml
-**/tpryan.yaml
-**/yufengg.yaml
+users/**.yaml 
+users/archive/**.yaml 
 **/drive_credentials.json
 **/token.json
 **/agmsb.yaml
-exec/users/tklopfenstein.yaml
 testdata/test-creds.json
 cmd/collect/collect
