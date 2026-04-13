@@ -154,3 +154,26 @@ func IssuesClosed(ctx context.Context, user string) (artifact.Artifacts, error) 
 	return Events(results).Artifacts(), nil
 
 }
+
+// Source represents a GitHub artifact source.
+type Source struct {
+	Username string
+}
+
+// Fetch returns results from GitHub as artifacts.
+func (s Source) Fetch(ctx context.Context) (artifact.Artifacts, error) {
+	q := fmt.Sprintf("author:%s is:pr state:closed", s.Username)
+
+	gartifacts, err := Search(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("could not get issues: %w", err)
+	}
+
+	gartifacts2, err := IssuesClosed(ctx, s.Username)
+	if err != nil {
+		return nil, fmt.Errorf("could not get issues: %w", err)
+	}
+
+	gartifacts = append(gartifacts, gartifacts2...)
+	return gartifacts, nil
+}

@@ -101,3 +101,30 @@ func Search(ctx context.Context, q string, svc *drive.Service) (artifact.Artifac
 	}
 	return files.Artifacts(), nil
 }
+
+// Source represents a Google Drive artifact source.
+type Source struct {
+	SVC  *drive.Service
+	User string
+}
+
+// Fetch returns results from Google Drive as artifacts.
+func (s Source) Fetch(ctx context.Context) (artifact.Artifacts, error) {
+	mlist := MimeList{
+		"application/vnd.google-apps.document",
+		"application/vnd.google-apps.spreadsheet",
+		"application/vnd.google-apps.form",
+		"application/vnd.google-apps.presentation",
+		"application/vnd.google.colaboratory.corp",
+	}
+
+	query := fmt.Sprintf("'%s@google.com' in owners and (%s)", s.User, mlist.String())
+
+	arts, err := Search(ctx, query, s.SVC)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving data from drive: %w", err)
+	}
+
+	arts.Sort()
+	return arts, nil
+}

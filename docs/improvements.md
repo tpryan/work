@@ -5,13 +5,13 @@ The current structure has some "leaky abstractions" where internal details are e
 
 * **Move Business Logic out of `internal`:** In Go, `internal` is for code you don't want others to import. Since `Config` and `Artifact` are the core of your application, consider moving the logic in `internal/artifact` directly into the top-level `work` package. This simplifies imports: instead of `artifact.Artifact`, you use `work.Artifact`.
 * **Consolidate Auth Logic:** You have authentication logic split between `internal/googleauth` and `internal/option`. Consolidate these into a single `pkg/auth` or keep them in `internal/auth`.
-* **Interface-Driven Providers:** Instead of the `main.go` calling `github.Search` and `drive.Search` directly, define a `Source` interface:
+<!-- * **Interface-Driven Providers:** Instead of the `main.go` calling `github.Search` and `drive.Search` directly, define a `Source` interface:
     ```go
     type Source interface {
         Fetch(ctx context.Context) (Artifacts, error)
     }
     ```
-    This allows you to add new sources (like a new internal tool) without touching the core reporting logic.
+    This allows you to add new sources (like a new internal tool) without touching the core reporting logic. -->
 
 ### 2. Idiomatic Go Improvements
 <!-- * **Standardize Date Handling:** In `work.go`, `Criteria` uses `time.Time`, but the YAML unmarshaler may struggle with various formats. Implement `UnmarshalYAML` for a custom `Date` type to handle the `YYYY-MM-DD` format more robustly. -->
@@ -21,8 +21,8 @@ The current structure has some "leaky abstractions" where internal details are e
 
 ### 3. Documentation & API Design
 <!-- * **Replace `Massage` with Functional Options:** The `Massage` function name is non-standard. A more idiomatic approach for filtering/transforming slices in Go is to use a "Filter" or "Pipeline" pattern. -->
-* **Use Go Doc Comments:** While some functions have comments, many are missing or don't follow the `// Name ...` convention.
-    * *Example:* `// Artifacts represents a collection of work products.` instead of just `// Artifacts is a collection...`. DONE
+<!-- * **Use Go Doc Comments:** While some functions have comments, many are missing or don't follow the `// Name ...` convention.
+    * *Example:* `// Artifacts represents a collection of work products.` instead of just `// Artifacts is a collection...`. DONE -->
 * **README and Examples:** The `docs/configuration.md` is excellent. Consider adding a `README.md` at the root that explains how to build the project using the existing `Makefile`.
 
 ### 4. Enhancing Performance & Safety

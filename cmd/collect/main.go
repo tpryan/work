@@ -72,15 +72,33 @@ func main() {
 
 	gsheet := gsheet.New(*sheetsSVC, config.SpreadSheetID)
 
-	log.Infof("Processing Github")
-	if err := processGithub(ctx, config.GithubUser, gsheet); err != nil {
-		log.Error("unable to retrieve latest github info: %s", err)
+	var sources []struct {
+		name   string
+		source artifact.Source
 	}
 
+	sources = append(sources, struct {
+		name   string
+		source artifact.Source
+	}{"Source - Github", github.Source{Username: config.GithubUser}})
+
 	if config.QueryDrive {
-		log.Infof("Processing Drive")
-		if err := processDrive(ctx, driveSVC, gsheet, user); err != nil {
-			log.Errorf("unable to retrieve latest drive info: %s", err)
+		sources = append(sources, struct {
+			name   string
+			source artifact.Source
+		}{"Source - DriveFiles", drive.Source{SVC: driveSVC, User: user}})
+	}
+
+	for _, s := range sources {
+		log.Infof("Processing %s", s.name)
+		arts, err := s.source.Fetch(ctx)
+		if err != nil {
+			log.Errorf("unable to retrieve %s info: %s", s.name, err)
+			continue
+		}
+
+		if err := gsheet.ToSheet(ctx, s.name, arts); err != nil {
+			log.Errorf("error writing %s to sheet: %s", s.name, err)
 		}
 	}
 
@@ -90,54 +108,6 @@ func main() {
 	}
 	log.Infof("...Finished")
 
-}
-
-func processDrive(ctx context.Context, svc *gdrive.Service, gsheet gsheet.GSheet, user string) error {
-
-	mlist := drive.MimeList{
-		"application/vnd.google-apps.document",
-		"application/vnd.google-apps.spreadsheet",
-		"application/vnd.google-apps.form",
-		"application/vnd.google-apps.presentation",
-		"application/vnd.google.colaboratory.corp",
-	}
-
-	query := fmt.Sprintf("'%s@google.com' in owners and (%s)", user, mlist.String())
-
-	arts, err := drive.Search(ctx, query, svc)
-	if err != nil {
-		return fmt.Errorf("error retrieving data from drive: %w", err)
-	}
-
-	arts.Sort()
-
-	if err := gsheet.ToSheet(ctx, "Source - DriveFiles", arts); err != nil {
-		return fmt.Errorf("error writing to sheet: %w", err)
-	}
-
-	return nil
-}
-
-func processGithub(ctx context.Context, username string, gsheet gsheet.GSheet) error {
-	q := fmt.Sprintf("author:%s is:pr state:closed", username)
-
-	gartifacts, err := github.Search(ctx, q)
-	if err != nil {
-		return fmt.Errorf("could not get issues: %w", err)
-	}
-
-	gartifacts2, err := github.IssuesClosed(ctx, username)
-	if err != nil {
-		return fmt.Errorf("could not get issues: %w", err)
-	}
-
-	gartifacts = append(gartifacts, gartifacts2...)
-
-	if err := gsheet.ToSheet(ctx, "Source - Github", gartifacts); err != nil {
-		return fmt.Errorf("error writing to sheet: %w", err)
-	}
-
-	return nil
 }
 
 func writeReport(ctx context.Context, gsheet gsheet.GSheet, sources []string, destinations work.Destinations, list artifact.Classifiers) error {

@@ -2,6 +2,7 @@ package artifact
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/url"
 	"reflect"
@@ -23,6 +24,11 @@ type Artifact struct {
 	ShippedDate time.Time `yaml:"shipped_date,omitempty" sheet:"Shipped Date"`
 	Link        string    `yaml:"link,omitempty" sheet:"Link"`
 	Extra       string    `yaml:"extra,omitempty" sheet:"-"`
+}
+
+// Source represents a type that can fetch a collection of Artifacts.
+type Source interface {
+	Fetch(ctx context.Context) (Artifacts, error)
 }
 
 // Copy returns an exact duplicate of an artifact

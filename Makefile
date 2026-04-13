@@ -31,7 +31,7 @@ build-analyze: fmt vet
 ## test: Run unit tests
 test: 
 	@echo "Running unit tests..."
-	@go test -v -short -count=1 -cover ./...
+	@go test -short -count=1 -cover ./...
 
 ## test-integration: Run integration tests (requires credentials)
 test-integration:
