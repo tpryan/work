@@ -1,6 +1,7 @@
 package drive
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -80,13 +81,13 @@ func (d DriveFiles) Artifacts() artifact.Artifacts {
 }
 
 // Search  returns results from Google Drive as artifacts
-func Search(q string, svc *drive.Service) (artifact.Artifacts, error) {
+func Search(ctx context.Context, q string, svc *drive.Service) (artifact.Artifacts, error) {
 
 	files := DriveFiles{}
 	var pageToken string
 
 	for {
-		r, err := svc.Files.List().PageToken(pageToken).Q(q).Do()
+		r, err := svc.Files.List().PageToken(pageToken).Q(q).Context(ctx).Do()
 		if err != nil {
 			return nil, fmt.Errorf("drive files list failed: %w", err)
 		}

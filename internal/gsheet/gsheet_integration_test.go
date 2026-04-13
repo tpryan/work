@@ -73,7 +73,7 @@ func TestGsheetSheetID(t *testing.T) {
 			gsheet := New(*sheetsSVC, tc.id)
 			t.Logf("sheet id: %v", tc.id)
 
-			got, err := gsheet.SheetID(tc.in)
+			got, err := gsheet.SheetID(context.Background(), tc.in)
 			if tc.errStr == "" && err != nil {
 				t.Logf("sheet name: %s", tc.in)
 				t.Logf("spreadsheet id: %s", tc.id)
@@ -116,7 +116,7 @@ func TestGsheetClear(t *testing.T) {
 
 			gsheet := New(*sheetsSVC, tc.id)
 
-			err := gsheet.Clear(tc.in)
+			err := gsheet.Clear(context.Background(), tc.in)
 			assert.Equal(t, tc.err, err)
 		})
 	}
@@ -161,13 +161,13 @@ func TestGsheetAdd(t *testing.T) {
 
 			gsheet := New(*sheetsSVC, tc.id)
 
-			err := gsheet.Add(tc.in)
+			err := gsheet.Add(context.Background(), tc.in)
 			if tc.errStr != "" && err != nil {
 				assert.Contains(t, err.Error(), tc.errStr)
 			}
 
 			if tc.clean {
-				err = gsheet.Delete(tc.in)
+				err = gsheet.Delete(context.Background(), tc.in)
 				t.Logf("cleanup: delete %s error: %s", tc.in, err)
 			}
 
@@ -210,11 +210,11 @@ func TestGsheetDelete(t *testing.T) {
 			gsheet := New(*sheetsSVC, tc.id)
 
 			if tc.create {
-				err := gsheet.Add(tc.in)
+				err := gsheet.Add(context.Background(), tc.in)
 				t.Logf("create: %s error: %s", tc.in, err)
 			}
 
-			err = gsheet.Delete(tc.in)
+			err = gsheet.Delete(context.Background(), tc.in)
 
 			if tc.errStr == "" {
 				assert.Nil(t, err)
@@ -267,7 +267,7 @@ func TestGSheetArtifacts(t *testing.T) {
 
 			gsheet := New(*sheetsSVC, tc.id)
 
-			got, err := gsheet.Artifacts(tc.in)
+			got, err := gsheet.Artifacts(context.Background(), tc.in)
 			if tc.errStr == "" && err != nil {
 				t.Fatalf("got an error when expected none: %s", err)
 			}
@@ -339,7 +339,7 @@ func TestGSheetUpdateData(t *testing.T) {
 
 			gsheet := New(*sheetsSVC, tc.id)
 
-			err := gsheet.UpdateData(tc.name, tc.in)
+			err := gsheet.UpdateData(context.Background(), tc.name, tc.in)
 			if tc.errStr == "" && err != nil {
 				t.Fatalf("got an error when expected none: %s", err)
 			}
@@ -347,7 +347,7 @@ func TestGSheetUpdateData(t *testing.T) {
 				t.Fatalf("got: '%s' expected : '%s'", err, tc.errStr)
 			}
 
-			got, err := gsheet.Artifacts(tc.name)
+			got, err := gsheet.Artifacts(context.Background(), tc.name)
 			if tc.errStr == "" {
 				require.NoError(t, err)
 			}
@@ -436,7 +436,7 @@ func TestGSheetToSheet(t *testing.T) {
 
 			gsheet := New(*sheetsSVC, tc.id)
 
-			err := gsheet.ToSheet(tc.name, tc.in)
+			err := gsheet.ToSheet(context.Background(), tc.name, tc.in)
 			if tc.errStr == "" && err != nil {
 				t.Fatalf("got an error when expected none: %s", err)
 			}
@@ -444,7 +444,7 @@ func TestGSheetToSheet(t *testing.T) {
 				t.Fatalf("got: '%s' expected : '%s'", err, tc.errStr)
 			}
 
-			got, err := gsheet.Artifacts(tc.name)
+			got, err := gsheet.Artifacts(context.Background(), tc.name)
 			if tc.errStr == "" {
 				require.NoError(t, err)
 			}
@@ -452,9 +452,10 @@ func TestGSheetToSheet(t *testing.T) {
 			assert.Equal(t, tc.in, got)
 
 			if tc.clean {
-				err = gsheet.Delete(tc.name)
-				t.Logf("cleanup: delete %s error: %s", tc.in, err)
+				err = gsheet.Delete(context.Background(), tc.name)
+				t.Logf("cleanup: delete %s error: %s", tc.name, err)
 			}
+
 
 		})
 	}

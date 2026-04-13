@@ -1,6 +1,7 @@
 package github
 
 import (
+	"context"
 	"strings"
 	"testing"
 	"time"
@@ -49,7 +50,7 @@ func TestGHSearch(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			got, err := Search(tc.q)
+			got, err := Search(context.Background(), tc.q)
 
 			if tc.errStr == "" && err != nil {
 				t.Fatalf("got an error when expected none: %s", err)

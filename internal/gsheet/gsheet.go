@@ -33,11 +33,11 @@ func New(svc sheets.Service, sheetID string) GSheet {
 
 // SheetID returns the sheet ID for the individual sheet
 // (think tabs at the bottom) for a given spreadsheet
-func (g *GSheet) SheetID(name string) (int64, error) {
+func (g *GSheet) SheetID(ctx context.Context, name string) (int64, error) {
 
 	ranges := []string{name}
 
-	resp, err := g.svc.Spreadsheets.Get(g.id).Ranges(ranges...).Context(context.Background()).Do()
+	resp, err := g.svc.Spreadsheets.Get(g.id).Ranges(ranges...).Context(ctx).Do()
 	if err != nil {
 		if strings.Contains(err.Error(), "Unable to parse range") {
 			return 0, errGSheetDoesNotExist
@@ -52,13 +52,13 @@ var errGSheetDoesNotExist = fmt.Errorf("sheets: input sheet does not exist")
 var errGSheetAlreadyExists = fmt.Errorf("sheets: input sheet already exists")
 
 // Clear removes all content from an input sheet name
-func (g *GSheet) Clear(name string) error {
+func (g *GSheet) Clear(ctx context.Context, name string) error {
 
 	clearRange := fmt.Sprintf("%s!A:Z", name)
 
 	req := &sheets.ClearValuesRequest{}
 
-	if _, err := g.svc.Spreadsheets.Values.Clear(g.id, clearRange, req).Do(); err != nil {
+	if _, err := g.svc.Spreadsheets.Values.Clear(g.id, clearRange, req).Context(ctx).Do(); err != nil {
 		if strings.Contains(err.Error(), "Unable to parse range") {
 			return errGSheetDoesNotExist
 		}
@@ -69,7 +69,7 @@ func (g *GSheet) Clear(name string) error {
 }
 
 // Add creates a new sheet in the spreadsheet with the input name
-func (g *GSheet) Add(name string) error {
+func (g *GSheet) Add(ctx context.Context, name string) error {
 
 	rbb := &sheets.BatchUpdateSpreadsheetRequest{
 		Requests: []*sheets.Request{
@@ -82,7 +82,7 @@ func (g *GSheet) Add(name string) error {
 			}},
 	}
 
-	if _, err := g.svc.Spreadsheets.BatchUpdate(g.id, rbb).Do(); err != nil {
+	if _, err := g.svc.Spreadsheets.BatchUpdate(g.id, rbb).Context(ctx).Do(); err != nil {
 		if strings.Contains(err.Error(), fmt.Sprintf("A sheet with the name \"%s\" already exists", name)) {
 			return errGSheetAlreadyExists
 		}
@@ -93,9 +93,9 @@ func (g *GSheet) Add(name string) error {
 }
 
 // Delete removes a sheet in the spreadsheet with the input name
-func (g *GSheet) Delete(name string) error {
+func (g *GSheet) Delete(ctx context.Context, name string) error {
 
-	id, err := g.SheetID(name)
+	id, err := g.SheetID(ctx, name)
 	if err != nil {
 		return err
 	}
@@ -109,7 +109,7 @@ func (g *GSheet) Delete(name string) error {
 			}},
 	}
 
-	if _, err := g.svc.Spreadsheets.BatchUpdate(g.id, rbb).Do(); err != nil {
+	if _, err := g.svc.Spreadsheets.BatchUpdate(g.id, rbb).Context(ctx).Do(); err != nil {
 		return fmt.Errorf("sheets: failed to delete sheet %w", err)
 	}
 	return nil
@@ -300,11 +300,11 @@ func (g *GSheet) FormatRows(id int64, a artifact.Artifacts) []*sheets.Request {
 }
 
 // ToSheet sends an interface to the named Sheet
-func (g *GSheet) ToSheet(name string, i Interfacer) error {
+func (g *GSheet) ToSheet(ctx context.Context, name string, i Interfacer) error {
 
-	id, err := g.SheetID(name)
+	id, err := g.SheetID(ctx, name)
 	if err == nil {
-		if err := g.Clear(name); err != nil {
+		if err := g.Clear(ctx, name); err != nil {
 			return fmt.Errorf("sheets: failed to clear sheet %w", err)
 		}
 	}
@@ -313,16 +313,16 @@ func (g *GSheet) ToSheet(name string, i Interfacer) error {
 		if err != errGSheetDoesNotExist {
 			return fmt.Errorf("sheets: failed to clear sheet %w", err)
 		}
-		if err := g.Add(name); err != nil {
+		if err := g.Add(ctx, name); err != nil {
 			return err
 		}
-		id, err = g.SheetID(name)
+		id, err = g.SheetID(ctx, name)
 		if err != nil {
 			return err
 		}
 	}
 
-	if err := g.UpdateData(name, i); err != nil {
+	if err := g.UpdateData(ctx, name, i); err != nil {
 		return fmt.Errorf("sheets: failed to insert into sheet %w", err)
 	}
 
@@ -342,7 +342,7 @@ func (g *GSheet) ToSheet(name string, i Interfacer) error {
 	batchreq.Requests = append(batchreq.Requests, g.FormatSheet(id)...)
 	batchreq.Requests = append(batchreq.Requests, g.FormatRows(id, i.(artifact.Artifacts))...)
 
-	if _, err := g.svc.Spreadsheets.BatchUpdate(g.id, batchreq).Do(); err != nil {
+	if _, err := g.svc.Spreadsheets.BatchUpdate(g.id, batchreq).Context(ctx).Do(); err != nil {
 		return fmt.Errorf("sheets: failed to apply formatting %w", err)
 	}
 
@@ -351,14 +351,14 @@ func (g *GSheet) ToSheet(name string, i Interfacer) error {
 
 // UpdateData inserts a given set of interfacer data into the spreadsheet in
 // sheet name
-func (g *GSheet) UpdateData(name string, i Interfacer) error {
+func (g *GSheet) UpdateData(ctx context.Context, name string, i Interfacer) error {
 
 	var vr sheets.ValueRange
 	vr.Values = i.ToInterfaces()
 
 	r := fmt.Sprintf("%s!A%d:Z100000", name, 1)
 
-	if _, err := g.svc.Spreadsheets.Values.Update(g.id, r, &vr).ValueInputOption("USER_ENTERED").Do(); err != nil {
+	if _, err := g.svc.Spreadsheets.Values.Update(g.id, r, &vr).Context(ctx).ValueInputOption("USER_ENTERED").Do(); err != nil {
 		if strings.Contains(err.Error(), "Unable to parse range") {
 			return errGSheetDoesNotExist
 		}
@@ -369,11 +369,11 @@ func (g *GSheet) UpdateData(name string, i Interfacer) error {
 }
 
 // Artifacts returns a given sheet as Artifacts
-func (g *GSheet) Artifacts(name string) (artifact.Artifacts, error) {
+func (g *GSheet) Artifacts(ctx context.Context, name string) (artifact.Artifacts, error) {
 	as := artifact.Artifacts{}
 	ranges := []string{name}
 
-	resp, err := g.svc.Spreadsheets.Get(g.id).Ranges(ranges...).IncludeGridData(true).Do()
+	resp, err := g.svc.Spreadsheets.Get(g.id).Ranges(ranges...).Context(ctx).IncludeGridData(true).Do()
 	if err != nil {
 		if strings.Contains(err.Error(), "Unable to parse range") {
 			return nil, errGSheetDoesNotExist

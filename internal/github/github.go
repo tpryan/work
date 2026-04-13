@@ -90,7 +90,7 @@ type Payload struct {
 }
 
 // Search returns results from github as artifacts
-func Search(q string) (artifact.Artifacts, error) {
+func Search(ctx context.Context, q string) (artifact.Artifacts, error) {
 
 	results := []*github.Issue{}
 	page := 1
@@ -105,7 +105,7 @@ func Search(q string) (artifact.Artifacts, error) {
 	for page > 0 {
 		opts.Page = page
 
-		result, response, err := client.Search.Issues(context.Background(), q, opts)
+		result, response, err := client.Search.Issues(ctx, q, opts)
 		if err != nil {
 			return nil, fmt.Errorf("github: could not search events: %w", err)
 		}
@@ -123,7 +123,7 @@ func Search(q string) (artifact.Artifacts, error) {
 
 }
 
-func IssuesClosed(user string) (artifact.Artifacts, error) {
+func IssuesClosed(ctx context.Context, user string) (artifact.Artifacts, error) {
 
 	results := []*github.Event{}
 	page := 1
@@ -136,7 +136,7 @@ func IssuesClosed(user string) (artifact.Artifacts, error) {
 	for page > 0 {
 		opts.Page = page
 
-		result, response, err := client.Activity.ListEventsPerformedByUser(context.Background(), user, true, opts)
+		result, response, err := client.Activity.ListEventsPerformedByUser(ctx, user, true, opts)
 		if err != nil {
 			return nil, fmt.Errorf("github: could not list events: %w", err)
 		}

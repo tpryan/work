@@ -77,7 +77,7 @@ func main() {
 
 		log.Infof("Analyzing %s", dest)
 
-		arts, err := gsheet.Artifacts(dest)
+		arts, err := gsheet.Artifacts(ctx, dest)
 		if err != nil {
 			log.Fatalf("unable to retrieve artifacts: %v", err)
 		}
