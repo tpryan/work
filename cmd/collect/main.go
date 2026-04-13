@@ -170,7 +170,7 @@ func writeReport(ctx context.Context, gsheet gsheet.GSheet, sources []string, de
 			artifacts := all.Copy()
 
 			artifacts.Massage(
-				artifact.Between(dest.Criteria.Start, dest.Criteria.End),
+				artifact.Between(dest.Criteria.Start.Time, dest.Criteria.End.Time),
 				artifact.Classify(list),
 				artifact.ProjectFilter(dest.Criteria.Project),
 				artifact.Unique(),

@@ -52,7 +52,42 @@ type Destinations []Destination
 
 // Criteria are the filters to match a Destination
 type Criteria struct {
-	Start   time.Time `yaml:"start,omitempty"`
-	End     time.Time `yaml:"end,omitempty"`
-	Project string    `yaml:"project,omitempty"`
+	Start   Date   `yaml:"start,omitempty"`
+	End     Date   `yaml:"end,omitempty"`
+	Project string `yaml:"project,omitempty"`
+}
+
+// Date is a custom type for handling YYYY-MM-DD dates in YAML.
+type Date struct {
+	time.Time
+}
+
+// UnmarshalYAML handles parsing of YYYY-MM-DD date strings.
+func (d *Date) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var s string
+	if err := unmarshal(&s); err != nil {
+		return err
+	}
+
+	if s == "" {
+		return nil
+	}
+
+	formats := []string{
+		"2006-01-02",
+		"2006-1-2",
+		time.RFC3339,
+	}
+
+	var t time.Time
+	var err error
+	for _, f := range formats {
+		t, err = time.Parse(f, s)
+		if err == nil {
+			d.Time = t
+			return nil
+		}
+	}
+
+	return fmt.Errorf("could not parse date %q: %w", s, err)
 }

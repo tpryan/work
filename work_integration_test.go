@@ -72,8 +72,8 @@ func TestBasic(t *testing.T) {
 						Sort:  "default",
 						Criteria: Criteria{
 							Project: "test",
-							Start:   time.Date(2023, 8, 1, 0, 0, 0, 0, time.UTC),
-							End:     time.Date(2023, 8, 28, 0, 0, 0, 0, time.UTC),
+							Start:   Date{Time: time.Date(2023, 8, 1, 0, 0, 0, 0, time.UTC)},
+							End:     Date{Time: time.Date(2023, 8, 28, 0, 0, 0, 0, time.UTC)},
 						},
 					},
 				},
