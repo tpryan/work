@@ -20,7 +20,7 @@ The current structure has some "leaky abstractions" where internal details are e
 <!-- * **Avoid `log.Fatalf` in Libraries:** Functions in `internal/` should return errors to the caller rather than terminating the program with `log.Fatalf`. Reserve `Fatalf` for the `main` package. DONE -->
 
 ### 3. Documentation & API Design
-* **Replace `Massage` with Functional Options:** The `Massage` function name is non-standard. A more idiomatic approach for filtering/transforming slices in Go is to use a "Filter" or "Pipeline" pattern.
+<!-- * **Replace `Massage` with Functional Options:** The `Massage` function name is non-standard. A more idiomatic approach for filtering/transforming slices in Go is to use a "Filter" or "Pipeline" pattern. -->
 * **Use Go Doc Comments:** While some functions have comments, many are missing or don't follow the `// Name ...` convention.
     * *Example:* `// Artifacts represents a collection of work products.` instead of just `// Artifacts is a collection...`. DONE
 * **README and Examples:** The `docs/configuration.md` is excellent. Consider adding a `README.md` at the root that explains how to build the project using the existing `Makefile`.

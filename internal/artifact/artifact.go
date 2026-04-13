@@ -136,9 +136,9 @@ func (a Artifacts) ToInterfaces() [][]interface{} {
 	return result
 }
 
-// Massage runs through all of the options in a queue to prune or otherwise
+// Apply runs through all of the options in a queue to prune or otherwise
 // alter the list of artifacts.
-func (a *Artifacts) Massage(opts ...Option) *Artifacts {
+func (a *Artifacts) Apply(opts ...Option) *Artifacts {
 	for _, opt := range opts {
 		opt(a)
 	}

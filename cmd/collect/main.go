@@ -169,7 +169,7 @@ func writeReport(ctx context.Context, gsheet gsheet.GSheet, sources []string, de
 			defer func() { <-sem }() // Release semaphore
 			artifacts := all.Copy()
 
-			artifacts.Massage(
+			artifacts.Apply(
 				artifact.Between(dest.Criteria.Start.Time, dest.Criteria.End.Time),
 				artifact.Classify(list),
 				artifact.ProjectFilter(dest.Criteria.Project),

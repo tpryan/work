@@ -239,7 +239,7 @@ func TestArtifactsOptionUnique(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			got := tc.in.Massage(Unique())
+			got := tc.in.Apply(Unique())
 			assert.Equal(t, tc.want, got)
 		})
 	}
@@ -332,7 +332,7 @@ func TestArtifactsOptionProjectFilter(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			got := tc.in.Massage(ProjectFilter(tc.project))
+			got := tc.in.Apply(ProjectFilter(tc.project))
 			assert.Equal(t, tc.want, got)
 		})
 	}
@@ -382,7 +382,7 @@ func TestArtifactsOptionBefore(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			got := tc.in.Massage(Before(tc.time))
+			got := tc.in.Apply(Before(tc.time))
 			assert.Equal(t, tc.want, got)
 		})
 	}
@@ -432,7 +432,7 @@ func TestArtifactsOptionAfter(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			got := tc.in.Massage(After(tc.time))
+			got := tc.in.Apply(After(tc.time))
 			assert.Equal(t, tc.want, got)
 		})
 	}
@@ -555,7 +555,7 @@ func TestArtifactsOptionBetween(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			got := tc.in.Massage(Between(tc.start, tc.end))
+			got := tc.in.Apply(Between(tc.start, tc.end))
 			assert.Equal(t, tc.want, got)
 		})
 	}
@@ -605,7 +605,7 @@ func TestArtifactsOptionExcludeTitle(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			got := tc.in.Massage(ExcludeTitle(tc.excludeString))
+			got := tc.in.Apply(ExcludeTitle(tc.excludeString))
 			assert.Equal(t, tc.want, got)
 		})
 	}
@@ -1049,7 +1049,7 @@ func TestArtifactsClassify(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			got := tc.in.Massage(Classify(tc.classifiers))
+			got := tc.in.Apply(Classify(tc.classifiers))
 			assert.Equal(t, tc.want, got)
 		})
 	}
