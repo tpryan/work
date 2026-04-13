@@ -155,12 +155,18 @@ func writeReport(gsheet gsheet.GSheet, sources []string, destinations work.Desti
 	}
 
 	var wg sync.WaitGroup
-	wg.Add(len(destinations))
+	// Limit concurrency to avoid hitting API rate limits.
+	const maxConcurrency = 5
+	sem := make(chan struct{}, maxConcurrency)
 
 	log.Infof("Writing to Sheet")
 	for _, dest := range destinations {
+		wg.Add(1)
+		sem <- struct{}{} // Acquire semaphore
 
 		go func(all artifact.Artifacts, dest work.Destination) {
+			defer wg.Done()
+			defer func() { <-sem }() // Release semaphore
 			artifacts := all.Copy()
 
 			artifacts.Massage(
@@ -185,8 +191,6 @@ func writeReport(gsheet gsheet.GSheet, sources []string, destinations work.Desti
 			if dest.Summary {
 				artifacts.Template(dest.Sheet)
 			}
-
-			wg.Done()
 		}(all, dest)
 
 	}
