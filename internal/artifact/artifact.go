@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/url"
+	"reflect"
 	"sort"
 	"strings"
 	"text/template"
@@ -14,14 +15,14 @@ const dateformat = "01-02-2006"
 
 // Artifact represents a work product.
 type Artifact struct {
-	Title       string    `yaml:"title,omitempty"`
-	Link        string    `yaml:"link,omitempty"`
-	Type        string    `yaml:"type,omitempty"`
-	Project     string    `yaml:"project,omitempty"`
-	Subproject  string    `yaml:"subproject,omitempty"`
-	Role        string    `yaml:"role,omitempty"`
-	ShippedDate time.Time `yaml:"shipped_date,omitempty"`
-	Extra       string    `yaml:"extra,omitempty"`
+	Type        string    `yaml:"type,omitempty" sheet:"Type"`
+	Project     string    `yaml:"project,omitempty" sheet:"Project"`
+	Subproject  string    `yaml:"subproject,omitempty" sheet:"Subproject"`
+	Title       string    `yaml:"title,omitempty" sheet:"Title"`
+	Role        string    `yaml:"role,omitempty" sheet:"Role"`
+	ShippedDate time.Time `yaml:"shipped_date,omitempty" sheet:"Shipped Date"`
+	Link        string    `yaml:"link,omitempty" sheet:"Link"`
+	Extra       string    `yaml:"extra,omitempty" sheet:"-"`
 }
 
 // Copy returns an exact duplicate of an artifact
@@ -34,6 +35,7 @@ func (a Artifact) Copy() Artifact {
 		Role:        a.Role,
 		ShippedDate: a.ShippedDate,
 		Link:        a.Link,
+		Extra:       a.Extra,
 	}
 }
 
@@ -87,14 +89,48 @@ type Artifacts []Artifact
 // ToInterfaces converts artifacts to the slice of slice of interfaces format
 // that gsheet requires for data input
 func (a Artifacts) ToInterfaces() [][]interface{} {
-	var result [][]interface{}
+	if len(a) == 0 {
+		return nil
+	}
 
-	header := []interface{}{"Type", "Project", "Subproject", "Title", "Role", "Shipped Date", "Link"}
-	result = append(result, header)
+	var result [][]interface{}
+	t := reflect.TypeOf(a[0])
+
+	var headers []interface{}
+	var fields []int
+
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		tag := field.Tag.Get("sheet")
+		if tag != "" && tag != "-" {
+			headers = append(headers, tag)
+			fields = append(fields, i)
+		}
+	}
+	result = append(result, headers)
 
 	for _, v := range a {
-		myval := []interface{}{v.Type, v.Project, v.Subproject, v.Title, v.Role, v.ShippedDate.Format("01/02/2006"), v.Hyperlink()}
-		result = append(result, myval)
+		var row []interface{}
+		rv := reflect.ValueOf(v)
+		for _, idx := range fields {
+			field := t.Field(idx)
+			val := rv.Field(idx).Interface()
+
+			// Special handling for specific types
+			switch field.Name {
+			case "ShippedDate":
+				if t, ok := val.(time.Time); ok {
+					row = append(row, t.Format("01/02/2006"))
+				} else {
+					row = append(row, "")
+				}
+			case "Link":
+				row = append(row, v.Hyperlink())
+			default:
+				row = append(row, val)
+			}
+		}
+		result = append(result, row)
 	}
 
 	return result
@@ -259,13 +295,13 @@ func (a Artifacts) Template(label string) (string, error) {
 
 	t, err := template.New("md").Parse(text)
 	if err != nil {
-		return "", fmt.Errorf("could not parse template: %s", err)
+		return "", fmt.Errorf("could not parse template: %w", err)
 	}
 
 	var tpl bytes.Buffer
 
 	if err := t.Execute(&tpl, r); err != nil {
-		return "", fmt.Errorf("could not execute template: %s", err)
+		return "", fmt.Errorf("could not execute template: %w", err)
 	}
 
 	return tpl.String(), nil

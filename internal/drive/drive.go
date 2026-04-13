@@ -88,7 +88,7 @@ func Search(q string, svc *drive.Service) (artifact.Artifacts, error) {
 	for {
 		r, err := svc.Files.List().PageToken(pageToken).Q(q).Do()
 		if err != nil {
-			return nil, fmt.Errorf("drive files list failed: %s", err)
+			return nil, fmt.Errorf("drive files list failed: %w", err)
 		}
 
 		files = append(files, r.Items...)

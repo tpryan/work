@@ -28,11 +28,11 @@ func NewConfig(path string) (*Config, error) {
 
 	dat, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("couldn't read the config file: %s", err)
+		return nil, fmt.Errorf("couldn't read the config file: %w", err)
 	}
 
 	if err := yaml.Unmarshal(dat, &config); err != nil {
-		return nil, fmt.Errorf("couldn't parse the config file: %s", err)
+		return nil, fmt.Errorf("couldn't parse the config file: %w", err)
 	}
 
 	return &config, nil

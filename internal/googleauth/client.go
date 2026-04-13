@@ -30,14 +30,14 @@ func NewClientOption(ctx context.Context, credPath string, scopes []string) (opt
 func NewClient(credPath, tokenPath string, scopes ...string) (*http.Client, error) {
 	b, err := os.ReadFile(credPath)
 	if err != nil {
-		return nil, fmt.Errorf("unable to read client secret file: %v", err)
+		return nil, fmt.Errorf("unable to read client secret file: %w", err)
 	}
 
 	// If it's a service account, ConfigFromJSON might not be the right choice if we want user-on-behalf flow.
 	// But assuming it's a client ID/secret for OAuth:
 	config, err := google.ConfigFromJSON(b, scopes...)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse client secret file to config: %v", err)
+		return nil, fmt.Errorf("unable to parse client secret file to config: %w", err)
 	}
 
 	client := getClient(config, tokenPath)

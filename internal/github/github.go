@@ -107,7 +107,7 @@ func Search(q string) (artifact.Artifacts, error) {
 
 		result, response, err := client.Search.Issues(context.Background(), q, opts)
 		if err != nil {
-			return nil, fmt.Errorf("github: could not search events: %s", err)
+			return nil, fmt.Errorf("github: could not search events: %w", err)
 		}
 
 		for _, v := range (*result).Issues {
@@ -138,7 +138,7 @@ func IssuesClosed(user string) (artifact.Artifacts, error) {
 
 		result, response, err := client.Activity.ListEventsPerformedByUser(context.Background(), user, true, opts)
 		if err != nil {
-			return nil, fmt.Errorf("github: could not list events: %s", err)
+			return nil, fmt.Errorf("github: could not list events: %w", err)
 		}
 
 		for _, v := range result {

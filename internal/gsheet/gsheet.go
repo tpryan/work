@@ -86,7 +86,7 @@ func (g *GSheet) Add(name string) error {
 		if strings.Contains(err.Error(), fmt.Sprintf("A sheet with the name \"%s\" already exists", name)) {
 			return errGSheetAlreadyExists
 		}
-		return fmt.Errorf("sheets: failed to create a new sheet %s", err)
+		return fmt.Errorf("sheets: failed to create a new sheet %w", err)
 	}
 
 	return nil
@@ -110,7 +110,7 @@ func (g *GSheet) Delete(name string) error {
 	}
 
 	if _, err := g.svc.Spreadsheets.BatchUpdate(g.id, rbb).Do(); err != nil {
-		return fmt.Errorf("sheets: failed to delete sheet %s", err)
+		return fmt.Errorf("sheets: failed to delete sheet %w", err)
 	}
 	return nil
 }
@@ -305,13 +305,13 @@ func (g *GSheet) ToSheet(name string, i Interfacer) error {
 	id, err := g.SheetID(name)
 	if err == nil {
 		if err := g.Clear(name); err != nil {
-			return fmt.Errorf("sheets: failed to clear sheet %s", err)
+			return fmt.Errorf("sheets: failed to clear sheet %w", err)
 		}
 	}
 
 	if err != nil {
 		if err != errGSheetDoesNotExist {
-			return fmt.Errorf("sheets: failed to clear sheet %s", err)
+			return fmt.Errorf("sheets: failed to clear sheet %w", err)
 		}
 		if err := g.Add(name); err != nil {
 			return err
@@ -323,7 +323,7 @@ func (g *GSheet) ToSheet(name string, i Interfacer) error {
 	}
 
 	if err := g.UpdateData(name, i); err != nil {
-		return fmt.Errorf("sheets: failed to insert into sheet %s", err)
+		return fmt.Errorf("sheets: failed to insert into sheet %w", err)
 	}
 
 	batchreq := &sheets.BatchUpdateSpreadsheetRequest{
@@ -343,7 +343,7 @@ func (g *GSheet) ToSheet(name string, i Interfacer) error {
 	batchreq.Requests = append(batchreq.Requests, g.FormatRows(id, i.(artifact.Artifacts))...)
 
 	if _, err := g.svc.Spreadsheets.BatchUpdate(g.id, batchreq).Do(); err != nil {
-		return fmt.Errorf("sheets: failed to apply formatting %s", err)
+		return fmt.Errorf("sheets: failed to apply formatting %w", err)
 	}
 
 	return nil
@@ -363,7 +363,7 @@ func (g *GSheet) UpdateData(name string, i Interfacer) error {
 			return errGSheetDoesNotExist
 		}
 
-		return fmt.Errorf("sheets: failed to insert data into sheet: %s", err)
+		return fmt.Errorf("sheets: failed to insert data into sheet: %w", err)
 	}
 	return nil
 }
