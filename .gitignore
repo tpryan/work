@@ -1,11 +1,19 @@
+# Binaries
+bin/
+collect
+analyze
 
-config/**
+# Config and Credentials
+config/
+credentials/
 **/credentials.json
-**/Promo.md
-users/**.yaml 
-users/archive/**.yaml 
 **/drive_credentials.json
 **/token.json
-**/agmsb.yaml
 testdata/test-creds.json
-cmd/collect/collect
+
+# User Data
+users/*.yaml
+users/archive/*.yaml
+
+# Misc
+**/Promo.md

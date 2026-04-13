@@ -13,16 +13,7 @@ import (
 )
 
 // NewClientOption returns a ClientOption for accessing Google APIs using a credentials file.
-// It combines the credentials file and scopes into a single option if possible,
-// or just returns the credentials option as that's what's typically needed.
 func NewClientOption(ctx context.Context, credPath string, scopes []string) (option.ClientOption, error) {
-	// In most cases, just providing the credentials file is enough.
-	// Scopes are often handled by the service client itself or the credentials file if it's a service account.
-	// If specific scopes are needed with a service account, option.WithScopes can be used,
-	// but NewService usually accepts variadic options.
-	// Since the caller expects a single option.ClientOption, we return WithCredentialsFile.
-	// If scopes are critical for the setup (e.g. strict scoping), we might need to chain them,
-	// but option.ClientOption is an interface.
 	return option.WithCredentialsFile(credPath), nil
 }
 
@@ -33,8 +24,6 @@ func NewClient(credPath, tokenPath string, scopes ...string) (*http.Client, erro
 		return nil, fmt.Errorf("unable to read client secret file: %w", err)
 	}
 
-	// If it's a service account, ConfigFromJSON might not be the right choice if we want user-on-behalf flow.
-	// But assuming it's a client ID/secret for OAuth:
 	config, err := google.ConfigFromJSON(b, scopes...)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse client secret file to config: %w", err)

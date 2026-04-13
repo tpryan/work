@@ -456,7 +456,6 @@ func TestGSheetToSheet(t *testing.T) {
 				t.Logf("cleanup: delete %s error: %s", tc.name, err)
 			}
 
-
 		})
 	}
 }
