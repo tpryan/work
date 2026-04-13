@@ -11,8 +11,8 @@ import (
 	"google.golang.org/api/option"
 )
 
-// New returns a clientOption from a given set of credentials.
-// Used to initialize Google API clients
+// New returns a ClientOption from a given set of credentials.
+// It is used to initialize Google API clients.
 func New(ctx context.Context, r io.Reader, scopes []string) (option.ClientOption, error) {
 	if r == nil {
 		return nil, fmt.Errorf("reader cannot be nil")

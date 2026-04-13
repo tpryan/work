@@ -10,10 +10,10 @@ import (
 	"github.com/tpryan/work/internal/artifact"
 )
 
-// Issues is a collection of github issues
+// Issues represents a collection of GitHub issues.
 type Issues []*github.Issue
 
-// Artifacts returns a collection of artifacts from a collection of github issues
+// Artifacts returns a collection of artifacts from a collection of GitHub issues.
 func (issues Issues) Artifacts() artifact.Artifacts {
 
 	linkreplacer := strings.NewReplacer("api.", "", "/repos/", "/")
@@ -40,10 +40,10 @@ func (issues Issues) Artifacts() artifact.Artifacts {
 	return gartifacts
 }
 
-// Events is a collection of github Events
+// Events represents a collection of GitHub Events.
 type Events []*github.Event
 
-// Artifacts returns a collection of artifacts from a collection of github issues
+// Artifacts returns a collection of artifacts from a collection of GitHub issues.
 func (events Events) Artifacts() artifact.Artifacts {
 	linkreplacer := strings.NewReplacer("api.", "", "/repos/", "/")
 	gartifacts := artifact.Artifacts{}
@@ -89,7 +89,7 @@ type Payload struct {
 	Action string `json:"action"`
 }
 
-// Search returns results from github as artifacts
+// Search returns results from GitHub as artifacts.
 func Search(ctx context.Context, q string) (artifact.Artifacts, error) {
 
 	results := []*github.Issue{}
@@ -123,6 +123,7 @@ func Search(ctx context.Context, q string) (artifact.Artifacts, error) {
 
 }
 
+// IssuesClosed returns a collection of closed issues for a given user.
 func IssuesClosed(ctx context.Context, user string) (artifact.Artifacts, error) {
 
 	results := []*github.Event{}

@@ -1,5 +1,5 @@
-// Package work defines code for using a gsheet as a datasource and destination
-// for work related artifacts
+// Package work defines code for using a Google Sheet as a datasource and destination
+// for work related artifacts.
 package work
 
 import (
@@ -12,7 +12,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// Config is the collection of settings that will direct artifact collection
+// Config represents the collection of settings that will direct artifact collection.
 type Config struct {
 	SpreadSheetID string               `yaml:"spread_sheet_id,omitempty"`
 	GithubUser    string               `yaml:"github_user,omitempty"`
@@ -22,7 +22,7 @@ type Config struct {
 	QueryDrive    bool                 `yaml:"query_drive,omitempty"`
 }
 
-// NewConfig returna a config from a given path
+// NewConfig returns a Config from a given path.
 func NewConfig(path string) (*Config, error) {
 	config := Config{}
 
@@ -39,7 +39,7 @@ func NewConfig(path string) (*Config, error) {
 
 }
 
-// Destination is a place to write a report based on the criteria
+// Destination represents a place to write a report based on the criteria.
 type Destination struct {
 	Sheet    string   `yaml:"sheet,omitempty"`
 	Sort     string   `yaml:"sort,omitempty"`
@@ -47,10 +47,10 @@ type Destination struct {
 	Criteria Criteria `yaml:"criteria,omitempty"`
 }
 
-// Destinations is a collection of destination items
+// Destinations represents a collection of Destination items.
 type Destinations []Destination
 
-// Criteria are the filters to match a Destination
+// Criteria represents the filters used to match a Destination.
 type Criteria struct {
 	Start   Date   `yaml:"start,omitempty"`
 	End     Date   `yaml:"end,omitempty"`

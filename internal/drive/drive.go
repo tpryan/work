@@ -10,10 +10,10 @@ import (
 	"google.golang.org/api/drive/v2"
 )
 
-// MimeList is a collection of mimetypes
+// MimeList represents a collection of MIME types.
 type MimeList []string
 
-// String retunrs the query string needed by drive to filter files
+// String returns the query string needed by Google Drive to filter files.
 func (m MimeList) String() string {
 	result := strings.Builder{}
 
@@ -27,10 +27,10 @@ func (m MimeList) String() string {
 	return result.String()
 }
 
-// DriveFiles is a collection of files returned from a Google Drive query
+// DriveFiles represents a collection of files returned from a Google Drive query.
 type DriveFiles []*drive.File
 
-// Artifacts returns a collection of artifacts from a collection of drive files
+// Artifacts returns a collection of artifacts from a collection of Drive files.
 func (d DriveFiles) Artifacts() artifact.Artifacts {
 
 	arts := artifact.Artifacts{}
@@ -80,7 +80,7 @@ func (d DriveFiles) Artifacts() artifact.Artifacts {
 	return arts
 }
 
-// Search  returns results from Google Drive as artifacts
+// Search returns results from Google Drive as artifacts.
 func Search(ctx context.Context, q string, svc *drive.Service) (artifact.Artifacts, error) {
 
 	files := DriveFiles{}

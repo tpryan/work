@@ -22,7 +22,7 @@ The current structure has some "leaky abstractions" where internal details are e
 ### 3. Documentation & API Design
 * **Replace `Massage` with Functional Options:** The `Massage` function name is non-standard. A more idiomatic approach for filtering/transforming slices in Go is to use a "Filter" or "Pipeline" pattern.
 * **Use Go Doc Comments:** While some functions have comments, many are missing or don't follow the `// Name ...` convention.
-    * *Example:* `// Artifacts represents a collection of work products.` instead of just `// Artifacts is a collection...`.
+    * *Example:* `// Artifacts represents a collection of work products.` instead of just `// Artifacts is a collection...`. DONE
 * **README and Examples:** The `docs/configuration.md` is excellent. Consider adding a `README.md` at the root that explains how to build the project using the existing `Makefile`.
 
 ### 4. Enhancing Performance & Safety

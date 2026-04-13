@@ -11,20 +11,20 @@ import (
 	"google.golang.org/api/sheets/v4"
 )
 
-// Interfacer describes a type that can self convert to Interfaces{}{} for
-// adding data to Sheets
+// Interfacer represents a type that can self convert to [][]interface{} for
+// adding data to Sheets.
 type Interfacer interface {
 	ToInterfaces() [][]interface{}
 }
 
-// GSheet provides read/write access to a Google Sheet. Given the correctly
-// initialized service it basically turns a Gsheet into a datasource
+// GSheet provides read/write access to a Google Sheet.
+// Given the correctly initialized service it basically turns a GSheet into a datasource.
 type GSheet struct {
 	svc *sheets.Service
 	id  string
 }
 
-// New returns a new GSheet object to act as a datasource
+// New returns a new GSheet object to act as a datasource.
 func New(svc sheets.Service, sheetID string) GSheet {
 	g := GSheet{svc: &svc, id: sheetID}
 	return g
@@ -32,7 +32,7 @@ func New(svc sheets.Service, sheetID string) GSheet {
 }
 
 // SheetID returns the sheet ID for the individual sheet
-// (think tabs at the bottom) for a given spreadsheet
+// (think tabs at the bottom) for a given spreadsheet.
 func (g *GSheet) SheetID(ctx context.Context, name string) (int64, error) {
 
 	ranges := []string{name}
@@ -51,7 +51,7 @@ func (g *GSheet) SheetID(ctx context.Context, name string) (int64, error) {
 var errGSheetDoesNotExist = fmt.Errorf("sheets: input sheet does not exist")
 var errGSheetAlreadyExists = fmt.Errorf("sheets: input sheet already exists")
 
-// Clear removes all content from an input sheet name
+// Clear removes all content from an input sheet name.
 func (g *GSheet) Clear(ctx context.Context, name string) error {
 
 	clearRange := fmt.Sprintf("%s!A:Z", name)
@@ -68,7 +68,7 @@ func (g *GSheet) Clear(ctx context.Context, name string) error {
 	return nil
 }
 
-// Add creates a new sheet in the spreadsheet with the input name
+// Add creates a new sheet in the spreadsheet with the input name.
 func (g *GSheet) Add(ctx context.Context, name string) error {
 
 	rbb := &sheets.BatchUpdateSpreadsheetRequest{
@@ -92,7 +92,7 @@ func (g *GSheet) Add(ctx context.Context, name string) error {
 	return nil
 }
 
-// Delete removes a sheet in the spreadsheet with the input name
+// Delete removes a sheet in the spreadsheet with the input name.
 func (g *GSheet) Delete(ctx context.Context, name string) error {
 
 	id, err := g.SheetID(ctx, name)
@@ -116,7 +116,7 @@ func (g *GSheet) Delete(ctx context.Context, name string) error {
 }
 
 // FormatSheet creates a set of batch requests that will format a sheet for
-// displaying artifacts
+// displaying artifacts.
 func (g *GSheet) FormatSheet(id int64) []*sheets.Request {
 
 	batchreq := &sheets.BatchUpdateSpreadsheetRequest{
@@ -206,8 +206,8 @@ func (g *GSheet) FormatSheet(id int64) []*sheets.Request {
 	return batchreq.Requests
 }
 
-// FormatRows generates batch requests to format individual rows of a row
-// where the rows consist of set of Artifacts
+// FormatRows generates batch requests to format individual rows of a sheet
+// where the rows consist of a set of Artifacts.
 func (g *GSheet) FormatRows(id int64, a artifact.Artifacts) []*sheets.Request {
 
 	batchreq := &sheets.BatchUpdateSpreadsheetRequest{
@@ -299,7 +299,7 @@ func (g *GSheet) FormatRows(id int64, a artifact.Artifacts) []*sheets.Request {
 	return batchreq.Requests
 }
 
-// ToSheet sends an interface to the named Sheet
+// ToSheet sends an Interfacer to the named Sheet.
 func (g *GSheet) ToSheet(ctx context.Context, name string, i Interfacer) error {
 
 	id, err := g.SheetID(ctx, name)
@@ -349,8 +349,8 @@ func (g *GSheet) ToSheet(ctx context.Context, name string, i Interfacer) error {
 	return nil
 }
 
-// UpdateData inserts a given set of interfacer data into the spreadsheet in
-// sheet name
+// UpdateData inserts a given set of Interfacer data into the spreadsheet in
+// the named sheet.
 func (g *GSheet) UpdateData(ctx context.Context, name string, i Interfacer) error {
 
 	var vr sheets.ValueRange
@@ -368,7 +368,7 @@ func (g *GSheet) UpdateData(ctx context.Context, name string, i Interfacer) erro
 	return nil
 }
 
-// Artifacts returns a given sheet as Artifacts
+// Artifacts returns the named sheet as a collection of Artifacts.
 func (g *GSheet) Artifacts(ctx context.Context, name string) (artifact.Artifacts, error) {
 	as := artifact.Artifacts{}
 	ranges := []string{name}

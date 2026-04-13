@@ -83,11 +83,11 @@ func (a Artifact) Hyperlink() string {
 	return fmt.Sprintf("=HYPERLINK(\"%s\",\"%s\")", u, title)
 }
 
-// Artifacts is a collection of Artifact items
+// Artifacts represents a collection of Artifact items.
 type Artifacts []Artifact
 
 // ToInterfaces converts artifacts to the slice of slice of interfaces format
-// that gsheet requires for data input
+// that gsheet requires for data input.
 func (a Artifacts) ToInterfaces() [][]interface{} {
 	if len(a) == 0 {
 		return nil
@@ -136,8 +136,8 @@ func (a Artifacts) ToInterfaces() [][]interface{} {
 	return result
 }
 
-// Massage runs through all of the options in a queue to prune an otherwise
-// alter the list of artifacts
+// Massage runs through all of the options in a queue to prune or otherwise
+// alter the list of artifacts.
 func (a *Artifacts) Massage(opts ...Option) *Artifacts {
 	for _, opt := range opts {
 		opt(a)
@@ -206,8 +206,8 @@ func urlMatch(u1, u2 string) bool {
 	return true
 }
 
-// Search looks for an exact match for a given link in a given set of artifacts
-// it adjusts for shortcuts for buganizer and critique
+// Search looks for an exact match for a given link in a given set of artifacts.
+// It adjusts for shortcuts for Buganizer and Critique.
 func (a Artifacts) Search(link string) (Artifact, bool) {
 	for _, art := range a {
 
@@ -220,7 +220,7 @@ func (a Artifacts) Search(link string) (Artifact, bool) {
 	return Artifact{}, false
 }
 
-// Copy duplicates a list of artifacts completely
+// Copy duplicates a list of artifacts completely.
 func (a Artifacts) Copy() Artifacts {
 	result := Artifacts{}
 
@@ -230,14 +230,14 @@ func (a Artifacts) Copy() Artifacts {
 	return result
 }
 
-// Sort reorders a list of artifacts by ShippedDate
+// Sort reorders a list of artifacts by ShippedDate.
 func (a *Artifacts) Sort() {
 	sort.Slice((*a), func(i, j int) bool {
 		return (*a)[i].ShippedDate.Before((*a)[j].ShippedDate)
 	})
 }
 
-// SortReport reorders a list of artifacts by Project, Subproject, Type, then ShippedDate
+// SortReport reorders a list of artifacts by Project, Subproject, Type, then ShippedDate.
 func (a *Artifacts) SortReport() {
 	sort.Slice((*a), func(i, j int) bool {
 		if (*a)[i].Project == (*a)[j].Project {
@@ -253,7 +253,7 @@ func (a *Artifacts) SortReport() {
 	})
 }
 
-// Template spits out a list of artifacts as a markdown report
+// Template generates a markdown report from a list of artifacts.
 func (a Artifacts) Template(label string) (string, error) {
 	a.SortReport()
 	a.FillInSubs()
@@ -307,7 +307,7 @@ func (a Artifacts) Template(label string) (string, error) {
 	return tpl.String(), nil
 }
 
-// FillInSubs adds N/A for all empty subprojects, for reporting purposes
+// FillInSubs adds N/A for all empty subprojects for reporting purposes.
 func (a *Artifacts) FillInSubs() {
 	result := Artifacts{}
 
@@ -320,10 +320,10 @@ func (a *Artifacts) FillInSubs() {
 	*a = result
 }
 
-// Option is function that alters a list of Artifacts
+// Option represents a function that alters a list of Artifacts.
 type Option = func(a *Artifacts)
 
-// After returns artifacts from after a particular shippedDate
+// After returns a function that filters artifacts from after a particular shippedDate.
 func After(t time.Time) Option {
 	return func(a *Artifacts) {
 		result := Artifacts{}
@@ -338,7 +338,7 @@ func After(t time.Time) Option {
 	}
 }
 
-// Before returns artifacts from before a particular shippedDate
+// Before returns a function that filters artifacts from before a particular shippedDate.
 func Before(t time.Time) Option {
 	return func(a *Artifacts) {
 		result := Artifacts{}
@@ -353,7 +353,7 @@ func Before(t time.Time) Option {
 	}
 }
 
-// Between returns artifacts from before and after particular shippedDates
+// Between returns a function that filters artifacts between particular shippedDates.
 func Between(start, end time.Time) Option {
 	return func(a *Artifacts) {
 		result := Artifacts{}
@@ -372,7 +372,7 @@ func Between(start, end time.Time) Option {
 
 }
 
-// ProjectFilter returns only the input projects
+// ProjectFilter returns a function that filters artifacts by the input project.
 func ProjectFilter(project string) Option {
 	return func(a *Artifacts) {
 		if project == "" {
@@ -392,7 +392,7 @@ func ProjectFilter(project string) Option {
 	}
 }
 
-// Unique removes repeated artifacts based on links
+// Unique returns a function that removes repeated artifacts based on links.
 func Unique() Option {
 	return func(a *Artifacts) {
 		result := Artifacts{}
@@ -419,7 +419,7 @@ func Unique() Option {
 	}
 }
 
-// ExcludeTitle removes articles that have the input string in the title
+// ExcludeTitle returns a function that removes artifacts that have the input string in the title.
 func ExcludeTitle(s string) Option {
 	return func(a *Artifacts) {
 		result := Artifacts{}
@@ -434,8 +434,8 @@ func ExcludeTitle(s string) Option {
 	}
 }
 
-// Classify analyzes a set of artifacts and fills in Project and Subproject
-// based on matches or substrings
+// Classify returns a function that analyzes a set of artifacts and fills in Project and Subproject
+// based on matches or substrings.
 func Classify(list Classifiers) Option {
 	return func(a *Artifacts) {
 		result := Artifacts{}
@@ -470,8 +470,8 @@ func Classify(list Classifiers) Option {
 
 }
 
-// Classifier is a data structure that is used for filling in missing data in
-// artifacts
+// Classifier represents a data structure used for filling in missing data in
+// artifacts.
 type Classifier struct {
 	Project    string              `yaml:"project,omitempty"`
 	Subproject string              `yaml:"subproject,omitempty"`
@@ -479,15 +479,15 @@ type Classifier struct {
 	Contains   map[string][]string `yaml:"contains,omitempty"`
 }
 
-// Classifiers is a collection of Classifer items
+// Classifiers represents a collection of Classifier items.
 type Classifiers struct {
 	Lists      []Classifier `yaml:"lists,omitempty"`
 	Exclusions []string     `yaml:"exclusions,omitempty"`
 	artifacts  Artifacts
 }
 
-// Search loons through a list of classifiers and returns a Artifact template
-// to use in filling in missing data in the items that match the link
+// Search looks through a list of classifiers and returns an Artifact template
+// to use in filling in missing data in the items that match the link.
 func (c Classifiers) Search(link string) (Artifact, bool) {
 	if c.artifacts == nil {
 		result := Artifacts{}
@@ -506,7 +506,7 @@ func (c Classifiers) Search(link string) (Artifact, bool) {
 	return c.artifacts.Search(link)
 }
 
-// Stamp alters the input artifact based on substring matching
+// Stamp alters the input artifact based on substring matching.
 func (c Classifiers) Stamp(art Artifact) Artifact {
 
 	for _, list := range c.Lists {
