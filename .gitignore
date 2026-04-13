@@ -11,3 +11,4 @@ config/**
 **/agmsb.yaml
 exec/users/tklopfenstein.yaml
 testdata/test-creds.json
+cmd/collect/collect
